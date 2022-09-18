@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-contracts/utils/Counters.sol";
+
 contract CharityFactory {
     ///@notice events emitted after each action
     event Contribute(address indexed contributor, uint256 indexed charityId, Currency currency, uint256 amount);
@@ -11,12 +14,15 @@ contract CharityFactory {
     
     ///@notice constants
     uint private constant CREATION_FEE = 0.01 ether;
-    address private constant USDC_ADDRESS = address(0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48);
+    IERC20 private constant USDC_ADDRESS = IERC20(0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48);
     
     ///@notice mappings
     mapping(uint256 => Charity) private charities;
     mapping(address => mapping(uint256 => UserDonation)) private donations;
     
+    ///@notice helpers
+    using Counters for Counters.Counter;
+    Counters.Counter private _counter;
     
     constructor() {
     
@@ -29,10 +35,10 @@ contract CharityFactory {
         require(msg.value >= CREATION_FEE, "You need to pay at least 0.01 ETH for a charity to start");
         // todo require goal to be more than CREATION_FEE
 
-
+        _counter.increment();
         charities.push(
             Charity({
-                id: 0, // TODO use Counter // 4.7.2 openzeppelin
+                id: _counter.current(),
                 currency: currency,
                 goal: goal,
                 endPeriod: endPeriod,
@@ -41,7 +47,7 @@ contract CharityFactory {
                 status: CharityStatus.ONGOING,
                 ethRaised: msg.value
             }));
-        emit CharityCreated(msg.sender, charityId, description);
+        emit CharityCreated(msg.sender, _counter.current(), description);
     }
     
     function donateEth(uint256 charityId) external payable {
@@ -49,7 +55,8 @@ contract CharityFactory {
         
         require(charity.status == CharityStatus.ONGOING, "Cannot donate to closed charity");
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
-    
+        require(msg.value > 0, "Cannot do zero amount contribution");
+
         UserDonation currentDonation = donations[msg.sender][charityId];
         if (currentDonation == null) {
             currentDonation = UserDonation({
@@ -67,9 +74,11 @@ contract CharityFactory {
         
         require(charity.status == CharityStatus.ONGOING, "Cannot donate to closed charity");
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
+        require(amount > 0, "Cannot do zero amount contribution");
     
-        // TODO transfer ERC-20 ; probably use approve on ui before it
-
+        USDC_ADDRESS.approve(address(this),  amount);
+        USDC_ADDRESS.transferFrom(msg.sender, address(this), amount);
+        
         UserDonation currentDonation = donations[msg.sender][charityId];
         if (currentDonation == null) {
             currentDonation = UserDonation({
@@ -87,10 +96,16 @@ contract CharityFactory {
         Charity charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_NOT_MET,
             "The withdrawal of contribution is possible only for closed charities with goal not being met");
-        // TODO transfer ERC-20 ; probably use approve on ui before it
         UserDonation currentDonation = donations[msg.sender][charityId];
+        
+        // withdraw usdc
+//        USDC_ADDRESS.approve(msg.sender, currentDonation.usdcRaised); //?
+        USDC_ADDRESS.transferFrom(address(this), msg.sender, currentDonation.usdcRaised);
+        
+        // withdraw eth
         (bool success,) = payable(msg.sender).call{value: currentDonation.ethRaised}("");
         require(success, "Failed to transfet eth");
+        
         donations[msg.sender][charityId] = null; // TODO - how to remove from mapping
         emit WithdrawContribution(msg.sender, charityId, currentDonation.ethRaised, currentDonation.usdcRaised);
     }
@@ -107,6 +122,14 @@ contract CharityFactory {
         
         if(goalMet) {
             charity.status = CharityStatus.CLOSED_GOAL_MET;
+            // transfer to beneficiary
+            // usdc
+//            USDC_ADDRESS.approve(address(this),  currentDonation.usdcRaised); // ?
+            USDC_ADDRESS.transferFrom(address(this), charity.beneficiary, charity.usdcRaised);
+    
+            // eth
+            (bool success,) = payable(charity.beneficiary).call{value: charity.ethRaised}("");
+            require(success, "Failed to transfet eth");
         } else {
             charity.status = CharityStatus.CLOSED_GOAL_NOT_MET;
         }
@@ -123,7 +146,9 @@ contract CharityFactory {
         emit ReceiveNtf(msg.sender, charityId);
     }
     
-    
+    function findCharities(FilterParams params) external returns(Charity[]) {
+        return [];
+    }
 }
 
 enum Currency {
@@ -149,6 +174,11 @@ struct Charity {
 struct UserDonation {
     uint256 ethRaised;
     uint256 usdcRaised;
+}
+
+struct FilterParams {
+    CharityStatus status;
+    bool userContributed;
 }
 
 
