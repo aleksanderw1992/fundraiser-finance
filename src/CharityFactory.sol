@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import "openzeppelin-contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/utils/Counters.sol";
 
+///@notice Contract for creating, searching and managing charities
+///@author Aleksander Wojcik (aleksander.w1992)
 contract CharityFactory {
     ///@notice events emitted after each action
     event Contribute(address indexed contributor, uint256 indexed charityId, Currency currency, uint256 amount);
@@ -19,6 +21,10 @@ contract CharityFactory {
     ///@notice mappings
     mapping(uint256 => Charity) private charities;
     mapping(address => mapping(uint256 => UserDonation)) private donations;
+    mapping(address => mapping(uint256 => bool)) private nftAlreadyReceived;
+    
+    ///@notice ids for iteration
+    uint256[] private charityIds;
     
     ///@notice helpers
     using Counters for Counters.Counter;
@@ -47,6 +53,7 @@ contract CharityFactory {
                 status: CharityStatus.ONGOING,
                 ethRaised: msg.value
             }));
+        charityIds.push(_counter.current());
         emit CharityCreated(msg.sender, _counter.current(), description);
     }
     
@@ -138,16 +145,30 @@ contract CharityFactory {
     
     function receiveNtf(uint256 charityId) external {
         require(charity.status == CharityStatus.CLOSED_GOAL_MET, "Nft reception is possible only for closed charities with goal met");
+        require(!nftAlreadyReceived[msg.sender][charityId], "Nft already received for user");
         UserDonation userDonation = donations[msg.sender][charityId];
         if(userDonation.ethRaised >0 || userDonation.usdcRaised > 0) {
-            // todo withdraw nft
+            Badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
+            nftAlreadyReceived[msg.sender][charityId] = true;
         }
         donations[msg.sender][charityId] = null; // TODO - how to remove from mapping
         emit ReceiveNtf(msg.sender, charityId);
     }
     
     function findCharities(FilterParams params) external returns(Charity[]) {
-        return [];
+        Charity[] result = new Charity[];
+        if (charityIds.length == 0 ) {
+            return result;
+        }
+        for(uint256 i=0; i<charityIds.length; i++) {
+            Charity temp = charities[charityIds[i]];
+            bool statusOk = temp.status == params.status;
+            bool userContributedOk = params.msgSenderContributedTrue? donations[msg.sender][temp.id] !=null: true;
+            if (statusOk && userContributedOk) {
+                result.push(temp);
+            }
+        }
+        return result;
     }
 }
 
@@ -178,7 +199,7 @@ struct UserDonation {
 
 struct FilterParams {
     CharityStatus status;
-    bool userContributed;
+    bool msgSenderContributedTrue;
 }
 
 
