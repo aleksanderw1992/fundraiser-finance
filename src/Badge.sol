@@ -7,6 +7,8 @@ import "openzeppelin-contracts/utils/Counters.sol";
 ///@notice Nft received for successful participation in charity
 ///@author Aleksander Wojcik (aleksander.w1992)
 contract Badge is ERC721 {
+
+    CharityFactory public immutable charityFactoryAddress;
     ///@notice mappings
     mapping(address=>mapping(uint256=>BadgeMetadata)) metadata;
     
@@ -14,12 +16,13 @@ contract Badge is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _counter;
     
-    constructor() ERC721("FundraiserFinanceParticipationBadge", "FFPB") public {
+    constructor(CharityFactory _charityFactoryAddress) ERC721("FundraiserFinanceParticipationBadge", "FFPB") public {
+        charityFactory = _charityFactoryAddress;
     }
     
     function mint(address contributor, uint256 charityId, uint256 ethRaised, uint256 usdcRaised) {
         // TODO make mint only available for CharityFactory contract
-//        require(msg.sender == address(CharityFactory), "Only charity factory contract can mint Badge NFT");
+        require(msg.sender == address(charityFactoryAddress), "Only charity factory contract can mint Badge NFT");
         _counter.increment();
         _safeMint(contributor, _counter.current());
         metadata[contributor][charityId]= BadgeMetadata({

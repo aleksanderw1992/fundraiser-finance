@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "openzeppelin-contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/utils/Counters.sol";
+import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 ///@notice Contract for creating, searching and managing charities
 ///@author Aleksander Wojcik (aleksander.w1992)
@@ -14,6 +15,9 @@ contract CharityFactory {
     event CloseCharity(uint256 indexed charityId, CharityStatus result);
     event ReceiveNtf(address indexed contributor, uint256 indexed charityId);
     
+    ///@notice declaring chainlink's price aggregator
+    AggregatorV3Interface internal priceFeed;
+    
     ///@notice constants
     uint private constant CREATION_FEE = 0.01 ether;
     IERC20 private constant USDC_ADDRESS = IERC20(0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48);
@@ -22,6 +26,7 @@ contract CharityFactory {
     mapping(uint256 => Charity) private charities;
     mapping(address => mapping(uint256 => UserDonation)) private donations;
     mapping(address => mapping(uint256 => bool)) private nftAlreadyReceived;
+    
     
     ///@notice ids for iteration
     uint256[] private charityIds;
@@ -39,7 +44,9 @@ contract CharityFactory {
         require(block.timestamp < endPeriod, "Charity cannot end in the past");
         require(beneficiary != address(0x0), "Beneficiary cannot be set to address zero");
         require(msg.value >= CREATION_FEE, "You need to pay at least 0.01 ETH for a charity to start");
-        // todo require goal to be more than CREATION_FEE
+        uint256 ethPrice = getEthPrice();
+        uint256 goalInUsdcInTimeOfCreation = currency == Currency.USDC? goal: goal * ethPrice;
+        require(ethPrice * msg.value < goalInUsdcInTimeOfCreation, "Cannot create a charity with too low goal");
 
         _counter.increment();
         charities.push(
@@ -113,7 +120,7 @@ contract CharityFactory {
         (bool success,) = payable(msg.sender).call{value: currentDonation.ethRaised}("");
         require(success, "Failed to transfet eth");
         
-        donations[msg.sender][charityId] = null; // TODO - how to remove from mapping
+        donations[msg.sender][charityId] = null; // TODO - how to remove from mapping; is setting to null enough?
         emit WithdrawContribution(msg.sender, charityId, currentDonation.ethRaised, currentDonation.usdcRaised);
     }
     
@@ -121,11 +128,11 @@ contract CharityFactory {
         Charity charity = charities[charityId];
         require(charity.status == CharityStatus.ONGOING, "Cannot close already closed charity");
         require(block.timestamp >= charity.endPeriod, "Cannot close charity until end period pass");
-
-        bool goalMet = true;
-        // todo - use the following variables and oracle to evaluate if goal is met:
-//        charity.ethRaised
-//        charity.usdcRaised
+    
+        uint256 ethPrice = getEthPrice();
+        uint256 goalInUsdc = charity.currency == Currency.USDC? charity.goal: charity.goal * ethPrice;
+        uint256 fundsRaised = charity.usdcRaised + charity.ethRaised * ethPrice;
+        bool goalMet = goalInUsdc <= fundsRaised;
         
         if(goalMet) {
             charity.status = CharityStatus.CLOSED_GOAL_MET;
@@ -151,7 +158,7 @@ contract CharityFactory {
             Badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
             nftAlreadyReceived[msg.sender][charityId] = true;
         }
-        donations[msg.sender][charityId] = null; // TODO - how to remove from mapping
+        donations[msg.sender][charityId] = null; // TODO - how to remove from mapping; is setting to null enough?
         emit ReceiveNtf(msg.sender, charityId);
     }
     
@@ -169,6 +176,13 @@ contract CharityFactory {
             }
         }
         return result;
+    }
+    
+    ///@notice Get latest price of ETH in USDC. Note - assuming 1 USD = 1 USDC which might not always be the case
+    ///@return ethPrice price of ETH in USDC
+    function getEthPrice() public view returns(uint256 ethPrice){
+        (,uint256 price,,,) = priceFeed.latestRoundData();
+        ethPrice = uint256(price) / 10**8;
     }
 }
 
