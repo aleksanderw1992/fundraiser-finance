@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import "openzeppelin-contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-contracts/utils/Counters.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./Badge.sol";
 
@@ -49,19 +48,13 @@ contract CharityFactory {
     uint private constant CREATION_FEE = 0.01 ether;
     IERC20 private immutable USDC_ADDRESS;
     
+    ///@notice list of all charities
+    Charity[] public charities;
     ///@notice mappings
-//    Charity[] public charities
-    mapping(uint256 => Charity) private charities; // todo will make it an array and not mapping
     mapping(address => mapping(uint256 => UserDonation)) private donations;
     mapping(address => mapping(uint256 => bool)) private nftAlreadyReceived;
     
-    
-    ///@notice ids for iteration
-    uint256[] private charityIds;
-    
-    ///@notice helpers
-    using Counters for Counters.Counter;
-    Counters.Counter private _counter;
+    ///@notice nft contribution badge
     Badge badge = new Badge(address(this));
     
     ///@notice passing usdc address for testing purpose
@@ -80,10 +73,10 @@ contract CharityFactory {
         uint256 goalInUsdcInTimeOfCreation = currency == Currency.USDC? goal: goal * ethPrice;
         require(ethPrice * msg.value < goalInUsdcInTimeOfCreation, "Cannot create a charity with too low goal");
 
-        _counter.increment();
-        charities[_counter.current()] =
+        uint256 newCharityId = charities.length;
+        charities.push(
             Charity({
-                id: _counter.current(),
+                id: newCharityId,
                 currency: currency,
                 goal: goal,
                 endPeriod: endPeriod,
@@ -92,9 +85,8 @@ contract CharityFactory {
                 status: CharityStatus.ONGOING,
                 ethRaised: msg.value,
                 usdcRaised: 0
-            });
-        charityIds.push(_counter.current());
-        emit CharityCreated(msg.sender, _counter.current(), description);
+            }));
+        emit CharityCreated(msg.sender, newCharityId, description);
     }
     
     function donateEth(uint256 charityId) external payable {
@@ -208,22 +200,9 @@ contract CharityFactory {
         emit ReceiveNtf(msg.sender, charityId);
     }
     
-    
-    ///@notice Get all charities; filtering will be done on frontend
-//    function getAllCharities() external returns(Charity[] memory) {
-//        Charity[] memory result = new Charity[];
-//        if (charityIds.length == 0 ) {
-//            return result;
-//        }
-//        for(uint256 i=0; i<charityIds.length; i++) {
-//            result[i] = charities[charityIds[i]];
-//        }
-//        return result;
-//    }
-    
     ///@notice Get latest price of ETH in USDC. Note - assuming 1 USD = 1 USDC which might not always be the case
     ///@return ethPrice price of ETH in USDC
-    function getEthPrice() public view returns(uint256 ethPrice){
+    function getEthPrice() private view returns(uint256 ethPrice){
         (,int256 price,,,) = priceFeed.latestRoundData();
         ethPrice = uint256(int256(price) / 10**8);
     }
