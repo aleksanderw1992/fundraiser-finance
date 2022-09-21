@@ -4,10 +4,37 @@ pragma solidity ^0.8.13;
 import "openzeppelin-contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/utils/Counters.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "./Badge.sol";
 
 ///@notice Contract for creating, searching and managing charities
 ///@author Aleksander Wojcik (aleksander.w1992)
 contract CharityFactory {
+    
+    enum Currency {
+        USDC, ETH
+    }
+
+    enum CharityStatus {
+        ONGOING, CLOSED_GOAL_MET, CLOSED_GOAL_NOT_MET
+    }
+    
+    struct Charity {
+        uint256 id;
+        Currency currency;
+        uint256 goal;
+        uint256 endPeriod;
+        string description;
+        address beneficiary;
+        CharityStatus status;
+        uint256 ethRaised;
+        uint256 usdcRaised;
+    }
+    
+    struct UserDonation {
+        uint256 ethRaised;
+        uint256 usdcRaised;
+    }
+    
     ///@notice events emitted after each action
     event Contribute(address indexed contributor, uint256 indexed charityId, Currency currency, uint256 amount);
     event CharityCreated(address indexed creator, uint256 indexed charityId, string description);
@@ -20,10 +47,11 @@ contract CharityFactory {
     
     ///@notice constants
     uint private constant CREATION_FEE = 0.01 ether;
-    IERC20 private constant USDC_ADDRESS = IERC20(0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48);
+    IERC20 private immutable USDC_ADDRESS;
     
     ///@notice mappings
-    mapping(uint256 => Charity) private charities;
+//    Charity[] public charities
+    mapping(uint256 => Charity) private charities; // todo will make it an array and not mapping
     mapping(address => mapping(uint256 => UserDonation)) private donations;
     mapping(address => mapping(uint256 => bool)) private nftAlreadyReceived;
     
@@ -34,12 +62,16 @@ contract CharityFactory {
     ///@notice helpers
     using Counters for Counters.Counter;
     Counters.Counter private _counter;
+    Badge badge = new Badge(address(this));
     
-    constructor() {
-    
+    ///@notice passing usdc address for testing purpose
+    constructor(address _usdcAddress) {
+        USDC_ADDRESS = IERC20(_usdcAddress);
+//        IERC20 private constant USDC_ADDRESS = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+
     }
     
-    function createCharity(Currency currency, uint256 goal, uint256 endPeriod, string description, address beneficiary) external payable {
+    function createCharity(Currency currency, uint256 goal, uint256 endPeriod, string memory description, address beneficiary) external payable {
         require(goal > 0, "Goal cannot be zero");
         require(block.timestamp < endPeriod, "Charity cannot end in the past");
         require(beneficiary != address(0x0), "Beneficiary cannot be set to address zero");
@@ -49,7 +81,7 @@ contract CharityFactory {
         require(ethPrice * msg.value < goalInUsdcInTimeOfCreation, "Cannot create a charity with too low goal");
 
         _counter.increment();
-        charities.push(
+        charities[_counter.current()] =
             Charity({
                 id: _counter.current(),
                 currency: currency,
@@ -58,33 +90,36 @@ contract CharityFactory {
                 description: description,
                 beneficiary: beneficiary,
                 status: CharityStatus.ONGOING,
-                ethRaised: msg.value
-            }));
+                ethRaised: msg.value,
+                usdcRaised: 0
+            });
         charityIds.push(_counter.current());
         emit CharityCreated(msg.sender, _counter.current(), description);
     }
     
     function donateEth(uint256 charityId) external payable {
-        Charity charity = charities[charityId];
+        Charity memory charity = charities[charityId];
         
         require(charity.status == CharityStatus.ONGOING, "Cannot donate to closed charity");
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
         require(msg.value > 0, "Cannot do zero amount contribution");
 
-        UserDonation currentDonation = donations[msg.sender][charityId];
-        if (currentDonation == null) {
+        UserDonation memory currentDonation = donations[msg.sender][charityId];
+        // solidity does not support null structs
+        if (currentDonation.ethRaised == 0 && currentDonation.usdcRaised == 0 ) {
             currentDonation = UserDonation({
-                ethRaised: msg.value
+                ethRaised: msg.value,
+                usdcRaised: 0
             });
             donations[msg.sender][charityId] = currentDonation;
         } else {
             currentDonation.ethRaised += msg.value;
         }
-        emit Contribute(msg.sender, charityId, Currency.ETH, amount);
+        emit Contribute(msg.sender, charityId, Currency.ETH, msg.value);
     }
     
     function donateUsdc(uint256 charityId, uint256 amount) external {
-        Charity charity = charities[charityId];
+        Charity memory charity = charities[charityId];
         
         require(charity.status == CharityStatus.ONGOING, "Cannot donate to closed charity");
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
@@ -93,24 +128,26 @@ contract CharityFactory {
         USDC_ADDRESS.approve(address(this),  amount);
         USDC_ADDRESS.transferFrom(msg.sender, address(this), amount);
         
-        UserDonation currentDonation = donations[msg.sender][charityId];
-        if (currentDonation == null) {
+        UserDonation memory currentDonation = donations[msg.sender][charityId];
+        // solidity does not support null structs
+        if (currentDonation.ethRaised == 0 && currentDonation.usdcRaised == 0) {
             currentDonation = UserDonation({
-                usdcRaised: amount
+                usdcRaised: amount,
+                ethRaised: 0
             });
             donations[msg.sender][charityId] = currentDonation;
     
         } else {
-            currentDonation.usdcRaised += msg.value;
+            currentDonation.usdcRaised += amount;
         }
         emit Contribute(msg.sender, charityId, Currency.USDC, amount);
     }
     
     function withdrawContribution(uint256 charityId) external {
-        Charity charity = charities[charityId];
+        Charity memory charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_NOT_MET,
             "The withdrawal of contribution is possible only for closed charities with goal not being met");
-        UserDonation currentDonation = donations[msg.sender][charityId];
+        UserDonation memory currentDonation = donations[msg.sender][charityId];
         
         // withdraw usdc
 //        USDC_ADDRESS.approve(msg.sender, currentDonation.usdcRaised); //?
@@ -118,14 +155,18 @@ contract CharityFactory {
         
         // withdraw eth
         (bool success,) = payable(msg.sender).call{value: currentDonation.ethRaised}("");
-        require(success, "Failed to transfet eth");
+        require(success, "Failed to transfer eth");
+    
         
-        donations[msg.sender][charityId] = null; // TODO - how to remove from mapping; is setting to null enough?
+        donations[msg.sender][charityId] = UserDonation({
+                ethRaised: 0,
+                usdcRaised: 0
+            });
         emit WithdrawContribution(msg.sender, charityId, currentDonation.ethRaised, currentDonation.usdcRaised);
     }
     
     function tryCloseCharity(uint256 charityId) external {
-        Charity charity = charities[charityId];
+        Charity memory charity = charities[charityId];
         require(charity.status == CharityStatus.ONGOING, "Cannot close already closed charity");
         require(block.timestamp >= charity.endPeriod, "Cannot close charity until end period pass");
     
@@ -151,69 +192,42 @@ contract CharityFactory {
     }
     
     function receiveNtf(uint256 charityId) external {
+        Charity memory charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_MET, "Nft reception is possible only for closed charities with goal met");
         require(!nftAlreadyReceived[msg.sender][charityId], "Nft already received for user");
-        UserDonation userDonation = donations[msg.sender][charityId];
+        UserDonation memory userDonation = donations[msg.sender][charityId];
         if(userDonation.ethRaised >0 || userDonation.usdcRaised > 0) {
-            Badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
+            badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
             nftAlreadyReceived[msg.sender][charityId] = true;
         }
-        donations[msg.sender][charityId] = null; // TODO - how to remove from mapping; is setting to null enough?
+        // solidity does not support null structs
+        donations[msg.sender][charityId] = UserDonation({
+                ethRaised: 0,
+                usdcRaised: 0
+            });
         emit ReceiveNtf(msg.sender, charityId);
     }
     
-    function findCharities(FilterParams params) external returns(Charity[]) {
-        Charity[] result = new Charity[];
-        if (charityIds.length == 0 ) {
-            return result;
-        }
-        for(uint256 i=0; i<charityIds.length; i++) {
-            Charity temp = charities[charityIds[i]];
-            bool statusOk = temp.status == params.status;
-            bool userContributedOk = params.msgSenderContributedTrue? donations[msg.sender][temp.id] !=null: true;
-            if (statusOk && userContributedOk) {
-                result.push(temp);
-            }
-        }
-        return result;
-    }
+    
+    ///@notice Get all charities; filtering will be done on frontend
+//    function getAllCharities() external returns(Charity[] memory) {
+//        Charity[] memory result = new Charity[];
+//        if (charityIds.length == 0 ) {
+//            return result;
+//        }
+//        for(uint256 i=0; i<charityIds.length; i++) {
+//            result[i] = charities[charityIds[i]];
+//        }
+//        return result;
+//    }
     
     ///@notice Get latest price of ETH in USDC. Note - assuming 1 USD = 1 USDC which might not always be the case
     ///@return ethPrice price of ETH in USDC
     function getEthPrice() public view returns(uint256 ethPrice){
-        (,uint256 price,,,) = priceFeed.latestRoundData();
-        ethPrice = uint256(price) / 10**8;
+        (,int256 price,,,) = priceFeed.latestRoundData();
+        ethPrice = uint256(int256(price) / 10**8);
     }
 }
 
-enum Currency {
-    USDC, ETH;
-}
-
-enum CharityStatus {
-    ONGOING, CLOSED_GOAL_MET, CLOSED_GOAL_NOT_MET;
-}
-
-struct Charity {
-    uint256 id;
-    Currency currency;
-    uint256 goal;
-    uint256 endPeriod;
-    string description;
-    address beneficiary;
-    CharityStatus status;
-    uint256 ethRaised;
-    uint256 usdcRaised;
-}
-
-struct UserDonation {
-    uint256 ethRaised;
-    uint256 usdcRaised;
-}
-
-struct FilterParams {
-    CharityStatus status;
-    bool msgSenderContributedTrue;
-}
 
 
