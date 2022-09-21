@@ -19,7 +19,7 @@ contract Badge is ERC721 {
 
     address public immutable charityFactoryAddress;
     ///@notice mappings
-    mapping(address=>mapping(uint256=>BadgeMetadata))  public metadata;
+    mapping(address=>mapping(uint256=>BadgeMetadata)) public metadata;
     
     ///@notice helpers
     using Counters for Counters.Counter;
