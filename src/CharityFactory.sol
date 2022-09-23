@@ -65,7 +65,7 @@ contract CharityFactory {
 
     }
     
-    function createCharity(Currency currency, uint256 goal, uint256 endPeriod, string memory description, address beneficiary) external payable {
+    function createCharity(Currency currency, uint256 goal, uint256 endPeriod, string memory description, address beneficiary) external payable returns(uint256){
         require(goal > 0, "Goal cannot be zero");
         require(block.timestamp < endPeriod, "Charity cannot end in the past");
         require(beneficiary != address(0x0), "Beneficiary cannot be set to address zero");
@@ -89,6 +89,7 @@ contract CharityFactory {
                 usdcRaised: 0
             }));
         emit CharityCreated(msg.sender, newCharityId, description);
+        return newCharityId;
     }
     
     function donateEth(uint256 charityId) external payable {
