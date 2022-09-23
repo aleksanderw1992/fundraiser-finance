@@ -70,6 +70,25 @@ contract CharityFactoryTest is Test {
         (CharityFactory.Currency.USDC, 1, charityDefaultEndTimestamp, "successful fundraising", beneficiary);
     }
     
+    function testDonateEthAndCheckEthRaisedValues() public {
+        vm.startPrank(contributorAddress);
+        uint256 charityId = createDefaultCharityTenEthGoal();
+        (,,,,,,CharityFactory.CharityStatus status, uint256 ethRaised, uint256 usdcRaised) = contractUnderTests.charities(charityId);
+        assertTrue(status == CharityFactory.CharityStatus.ONGOING);
+        assertEq(ethRaised, 0.01 ether);
+        assertEq(usdcRaised, 0);
+    
+        contractUnderTests.donateEth{value: 10 ether}(charityId);
+    
+        (,,,,,,, uint256 ethRaisedAfterChange, uint256 usdcRaisedAfterChange) = contractUnderTests.charities(charityId);
+        console.log("ethRaisedAfterChange: %s", ethRaisedAfterChange);
+        console.log("usdcRaisedAfterChange: %s", usdcRaisedAfterChange);
+
+        assertEq(ethRaisedAfterChange, 10.01 ether);
+        assertEq(usdcRaisedAfterChange, 0);
+        vm.stopPrank();
+    }
+    
     function testDonateEthAndCloseCharityWithGoalMet() public {
         vm.startPrank(contributorAddress);
         uint256 charityId = createDefaultCharityTenEthGoal();

@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "openzeppelin-contracts/token/ERC20/IERC20.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./Badge.sol";
+import "forge-std/console.sol";
 
 ///@notice Contract for creating, searching and managing charities
 ///@author Aleksander Wojcik (aleksander.w1992)
@@ -88,16 +89,27 @@ contract CharityFactory {
                 ethRaised: msg.value,
                 usdcRaised: 0
             }));
+        donations[msg.sender][newCharityId] = UserDonation({
+            ethRaised: msg.value,
+            usdcRaised: 0
+        });
         emit CharityCreated(msg.sender, newCharityId, description);
         return newCharityId;
     }
     
     function donateEth(uint256 charityId) external payable {
-        Charity memory charity = charities[charityId];
+        Charity storage charity = charities[charityId];
         
         require(charity.status == CharityStatus.ONGOING, "Cannot donate to closed charity");
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
         require(msg.value > 0, "Cannot do zero amount contribution");
+        
+
+        console.log("Donating : %s to already raised %s", msg.value, charity.ethRaised);
+
+        
+        charity.ethRaised += msg.value;
+console.log("ethRaised : %s", charity.ethRaised);
 
         UserDonation memory currentDonation = donations[msg.sender][charityId];
         // solidity does not support null structs
@@ -114,12 +126,14 @@ contract CharityFactory {
     }
     
     function donateUsdc(uint256 charityId, uint256 amount) external {
-        Charity memory charity = charities[charityId];
+        Charity storage charity = charities[charityId];
         
         require(charity.status == CharityStatus.ONGOING, "Cannot donate to closed charity");
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
         require(amount > 0, "Cannot do zero amount contribution");
-    
+
+        charity.usdcRaised += amount;
+
         USDC_ADDRESS.approve(address(this),  amount);
         USDC_ADDRESS.transferFrom(msg.sender, address(this), amount);
         
@@ -139,7 +153,7 @@ contract CharityFactory {
     }
     
     function withdrawContribution(uint256 charityId) external {
-        Charity memory charity = charities[charityId];
+        Charity storage charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_NOT_MET,
             "The withdrawal of contribution is possible only for closed charities with goal not being met");
         UserDonation memory currentDonation = donations[msg.sender][charityId];
@@ -161,14 +175,22 @@ contract CharityFactory {
     }
     
     function tryCloseCharity(uint256 charityId) external {
-        Charity memory charity = charities[charityId];
+        Charity storage charity = charities[charityId];
         require(charity.status == CharityStatus.ONGOING, "Cannot close already closed charity");
         require(block.timestamp >= charity.endPeriod, "Cannot close charity until end period pass");
     
         uint256 ethPrice = getEthPrice();
         uint256 goalInUsdc = charity.currency == Currency.USDC? charity.goal: charity.goal * ethPrice;
-        uint256 fundsRaised = charity.usdcRaised + charity.ethRaised * ethPrice;
+        uint256 fundsRaised = charity.usdcRaised + (charity.ethRaised * ethPrice)/ (10**18);
         bool goalMet = goalInUsdc <= fundsRaised;
+
+        console.log("charity.usdcRaised : %s", charity.usdcRaised);
+        console.log("charity.ethRaised : %s", charity.ethRaised);
+        console.log("ethPrice : %s", ethPrice);
+        console.log("goalInUsdc : %s", goalInUsdc);
+        console.log("fundsRaised : %s", fundsRaised);
+        console.log("goalMet : %s", goalMet);
+
         
         if(goalMet) {
             charity.status = CharityStatus.CLOSED_GOAL_MET;
@@ -187,7 +209,7 @@ contract CharityFactory {
     }
     
     function receiveNtf(uint256 charityId) external {
-        Charity memory charity = charities[charityId];
+        Charity storage charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_MET, "Nft reception is possible only for closed charities with goal met");
         require(!nftAlreadyReceived[msg.sender][charityId], "Nft already received for user");
         UserDonation memory userDonation = donations[msg.sender][charityId];
