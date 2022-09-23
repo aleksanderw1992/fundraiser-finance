@@ -8,11 +8,6 @@ import "./mock/MockERC20.sol";
 import "chainlink/contracts/src/v0.8/tests/MockV3Aggregator.sol";
 
 contract CharityFactoryTest is Test {
-    ///@notice foundry requires events to be copied to test contract; might change after framework improvement
-    event CloseCharity(uint256 indexed charityId, CharityFactory.CharityStatus result);
-    
-    
-    
     CharityFactory contractUnderTests;
     uint256 ETH_MIN_PRICE = 0.01 ether;
     uint256 ETH_NOT_SUFFICIENT_PRICE = 0.009 ether;
@@ -80,15 +75,15 @@ contract CharityFactoryTest is Test {
         uint256 charityId = createDefaultCharityTenEthGoal();
         contractUnderTests.donateEth{value: 10 ether}(charityId);
         vm.warp(charityDefaultEndTimestamp);
-        vm.expectEmit(true, true, false, false);
-        emit CloseCharity(charityId, CharityFactory.CharityStatus.CLOSED_GOAL_MET);
         
         assertEq(contributorAddress.balance, 0.01 ether);
         assertEq(musdc.balanceOf(contributorAddress), 20000);
         
         contractUnderTests.tryCloseCharity(charityId);
-        (,,,,,,CharityFactory.CharityStatus status, uint256 memory ethRaised, uint256 memory usdcRaised) = contractUnderTests.charities(charityId);
+        (,,,,,,CharityFactory.CharityStatus status, uint256 ethRaised, uint256 usdcRaised) = contractUnderTests.charities(charityId);
         assertTrue(status == CharityFactory.CharityStatus.CLOSED_GOAL_MET);
+        assertEq(ethRaised, 10.01 ether);
+        assertEq(usdcRaised, 0);
 
         console.log("status: %s", uint8(status));
         vm.stopPrank();
@@ -103,10 +98,13 @@ contract CharityFactoryTest is Test {
         assertEq(contributorAddress.balance, 10.01 ether);
         assertEq(musdc.balanceOf(contributorAddress), 0);
     
-        vm.warp(charityDefaultEndTimestamp);
-        vm.expectEmit(true, true, false, false);
-        emit CloseCharity(charityId, CharityFactory.CharityStatus.CLOSED_GOAL_MET);
         contractUnderTests.tryCloseCharity(charityId);
+        (,,,,,,CharityFactory.CharityStatus status, uint256 ethRaised, uint256 usdcRaised) = contractUnderTests.charities(charityId);
+        assertTrue(status == CharityFactory.CharityStatus.CLOSED_GOAL_MET);
+        assertEq(ethRaised, 0.01 ether);
+        assertEq(usdcRaised, 20000);
+    
+        console.log("status: %s", uint8(status));
         vm.stopPrank();
     }
     
@@ -122,11 +120,14 @@ contract CharityFactoryTest is Test {
 
         assertEq(contributorAddress.balance, 5.01 ether);
         assertEq(musdc.balanceOf(contributorAddress), 19800);
-        
-        vm.warp(charityDefaultEndTimestamp);
-        vm.expectEmit(true, true, false, false);
-        emit CloseCharity(charityId, CharityFactory.CharityStatus.CLOSED_GOAL_NOT_MET);
+    
         contractUnderTests.tryCloseCharity(charityId);
+        (,,,,,,CharityFactory.CharityStatus status, uint256 ethRaised, uint256 usdcRaised) = contractUnderTests.charities(charityId);
+        assertTrue(status == CharityFactory.CharityStatus.CLOSED_GOAL_MET);
+        assertEq(ethRaised, 5.01 ether);
+        assertEq(usdcRaised, 200);
+    
+        console.log("status: %s", uint8(status));
 //        contractUnderTests.withdrawContribution(charityId);
     
 //        assertEq(contributorAddress.balance, 10.01 ether);
