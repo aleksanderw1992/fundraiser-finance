@@ -27,7 +27,7 @@ contract CharityFactoryTest is Test {
         musdc.mint(contributorAddress, 20000);
         vm.startPrank(deployer);
         contractUnderTests = new CharityFactory(address(musdc), address(mockChainlinkAggregator));
-        badge = new Badge(address(contractUnderTests));
+        badge = contractUnderTests.badge();
         vm.stopPrank();
         vm.warp(creationTimestamp);
     }
@@ -107,6 +107,14 @@ contract CharityFactoryTest is Test {
     }
     
     function testCreateAndCloseCharityGoalNotMet() public {
+        uint256 charityId = createAndCloseCharityGoalNotMet();
+        vm.startPrank(contributorAddress);
+        vm.expectRevert("Cannot donate to closed charity");
+        contractUnderTests.donateEth{value: 1 ether}(charityId);
+        vm.stopPrank();
+    }
+    
+    function testCannotDonateToClosedCharity() public {
         uint256 charityId = createAndCloseCharityGoalNotMet();
         (,,,,,,CharityFactory.CharityStatus status,,) = contractUnderTests.charities(charityId);
         assertTrue(status == CharityFactory.CharityStatus.CLOSED_GOAL_NOT_MET);
@@ -252,17 +260,18 @@ contract CharityFactoryTest is Test {
     
         assertEq(nftTokenId, 1);
         assertEq(nftCharityId, charityId);
-        assertEq(nftEthRaised, 10.1 ether);
+        assertEq(nftEthRaised, 10.01 ether);
         assertEq(nftUsdcRaised, 0);
         assertEq(nftContributor, contributorAddress);
     }
     
     function testCannotReceiveNftTwice() public {
         uint256 charityId = createAndCloseCharityGoalMet();
-        vm.prank(contributorAddress);
+        vm.startPrank(contributorAddress);
         contractUnderTests.receiveNtf(charityId);
         vm.expectRevert("Nft already received for user");
         contractUnderTests.receiveNtf(charityId);
+        vm.stopPrank();
     }
     
     function testCannotWithdrawFundsForGoalMet() public {

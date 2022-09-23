@@ -56,7 +56,7 @@ contract CharityFactory {
     mapping(address => mapping(uint256 => bool)) private nftAlreadyReceived;
     
     ///@notice nft contribution badge
-    Badge badge = new Badge(address(this));
+    Badge public immutable badge = new Badge(address(this));
     
     ///@notice passing usdc address for testing purpose
     constructor(address _usdcAddress, address _aggregatorAddress) {
