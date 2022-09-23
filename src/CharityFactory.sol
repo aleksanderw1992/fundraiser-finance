@@ -104,23 +104,17 @@ contract CharityFactory {
         require(block.timestamp < charity.endPeriod, "Cannot donate to closed charity");
         require(msg.value > 0, "Cannot do zero amount contribution");
         
-
-        console.log("Donating : %s to already raised %s", msg.value, charity.ethRaised);
-
-        
         charity.ethRaised += msg.value;
-console.log("ethRaised : %s", charity.ethRaised);
 
         UserDonation memory currentDonation = donations[msg.sender][charityId];
         // solidity does not support null structs
         if (currentDonation.ethRaised == 0 && currentDonation.usdcRaised == 0 ) {
-            currentDonation = UserDonation({
+            donations[msg.sender][charityId] = UserDonation({
                 ethRaised: msg.value,
                 usdcRaised: 0
             });
-            donations[msg.sender][charityId] = currentDonation;
         } else {
-            currentDonation.ethRaised += msg.value;
+            donations[msg.sender][charityId].ethRaised += msg.value;
         }
         emit Contribute(msg.sender, charityId, Currency.ETH, msg.value);
     }
@@ -140,23 +134,22 @@ console.log("ethRaised : %s", charity.ethRaised);
         UserDonation memory currentDonation = donations[msg.sender][charityId];
         // solidity does not support null structs
         if (currentDonation.ethRaised == 0 && currentDonation.usdcRaised == 0) {
-            currentDonation = UserDonation({
+            donations[msg.sender][charityId] = UserDonation({
                 usdcRaised: amount,
                 ethRaised: 0
             });
-            donations[msg.sender][charityId] = currentDonation;
     
         } else {
-            currentDonation.usdcRaised += amount;
+            donations[msg.sender][charityId].usdcRaised += amount;
         }
         emit Contribute(msg.sender, charityId, Currency.USDC, amount);
     }
     
     function withdrawContribution(uint256 charityId) external {
-        Charity storage charity = charities[charityId];
+        Charity memory charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_NOT_MET,
             "The withdrawal of contribution is possible only for closed charities with goal not being met");
-        UserDonation memory currentDonation = donations[msg.sender][charityId];
+        UserDonation storage currentDonation = donations[msg.sender][charityId];
         
         // withdraw usdc
 //        USDC_ADDRESS.approve(msg.sender, currentDonation.usdcRaised); //?
