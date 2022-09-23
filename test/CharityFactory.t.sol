@@ -107,7 +107,7 @@ contract CharityFactoryTest is Test {
     }
     
     function testCreateAndCloseCharityGoalNotMet() public {
-        uint256 charityId = createAndCloseCharityGoalMet();
+        uint256 charityId = createAndCloseCharityGoalNotMet();
         (,,,,,,CharityFactory.CharityStatus status,,) = contractUnderTests.charities(charityId);
         assertTrue(status == CharityFactory.CharityStatus.CLOSED_GOAL_NOT_MET);
     }
@@ -226,6 +226,13 @@ contract CharityFactoryTest is Test {
     }
     
     
+    function testCannotReceiveNftForNotDonatingUser() public {
+        uint256 charityId = createAndCloseCharityGoalMet();
+        vm.prank(anotherAddress);
+        vm.expectRevert("User did not donate to charity");
+        contractUnderTests.receiveNtf(charityId);
+    }
+    
     function testReceiveNftForGoalMet() public {
         uint256 charityId = createAndCloseCharityGoalMet();
         vm.prank(contributorAddress);
@@ -279,7 +286,7 @@ contract CharityFactoryTest is Test {
         assertEq(musdc.balanceOf(beneficiary), 0);
         contractUnderTests.tryCloseCharity(charityId);
     
-        assertEq(beneficiary.balance, 10.1 ether);
+        assertEq(beneficiary.balance, 10.01 ether);
         assertEq(musdc.balanceOf(beneficiary), 200);
         vm.stopPrank();
     }

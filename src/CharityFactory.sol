@@ -202,14 +202,13 @@ contract CharityFactory {
     }
     
     function receiveNtf(uint256 charityId) external {
-        Charity storage charity = charities[charityId];
+        Charity memory charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_MET, "Nft reception is possible only for closed charities with goal met");
         require(!nftAlreadyReceived[msg.sender][charityId], "Nft already received for user");
         UserDonation memory userDonation = donations[msg.sender][charityId];
-        if(userDonation.ethRaised >0 || userDonation.usdcRaised > 0) {
-            badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
-            nftAlreadyReceived[msg.sender][charityId] = true;
-        }
+        require(userDonation.ethRaised >0 || userDonation.usdcRaised > 0, "User did not donate to charity");
+        badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
+        nftAlreadyReceived[msg.sender][charityId] = true;
         // solidity does not support null structs
         donations[msg.sender][charityId] = UserDonation({
                 ethRaised: 0,
