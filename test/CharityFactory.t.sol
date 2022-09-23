@@ -17,7 +17,7 @@ contract CharityFactoryTest is Test {
     MockERC20 musdc = new MockERC20();
     uint256 creationTimestamp = 1000000;
     // 1 eth = 2000 USDC
-    MockV3Aggregator mockChainlinkAggregator = new MockV3Aggregator(18, 2000*(10**18));
+    MockV3Aggregator mockChainlinkAggregator = new MockV3Aggregator(8, 2000*(10**8));
     
     function setUp() public {
         vm.startPrank(deployer);

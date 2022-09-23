@@ -72,7 +72,8 @@ contract CharityFactory {
         require(msg.value >= CREATION_FEE, "You need to pay at least 0.01 ETH for a charity to start");
         uint256 ethPrice = getEthPrice();
         uint256 goalInUsdcInTimeOfCreation = currency == Currency.USDC? goal: goal * ethPrice;
-        require(ethPrice * msg.value < goalInUsdcInTimeOfCreation, "Cannot create a charity with too low goal");
+        uint256 msgValueInUsdc = uint256 ((ethPrice * msg.value) / (10**18));
+        require(msgValueInUsdc < goalInUsdcInTimeOfCreation, "Cannot create a charity with too low goal");
 
         uint256 newCharityId = charities.length;
         charities.push(
