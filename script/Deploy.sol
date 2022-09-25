@@ -15,7 +15,7 @@ contract Deploy is Script {
     function run() external {
         vm.startBroadcast();
         CharityFactory charityFactory = new CharityFactory(USDC_ADDRESS, USDC_ETH_FEED_ADDRESS);
-        new Badge(address(charityFactory));
+        // Badge contract is created along with CharityFactory
         vm.stopBroadcast();
     }
 }
