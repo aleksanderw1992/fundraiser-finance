@@ -45,22 +45,29 @@ function App() {
       badgeContract: badgeContract,
       usdcContract: usdcContract
     });
-    console.log("before createCharity");
-    var result = charityFactoryContract.createCharity(0,10,1665031732,"asdf","0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
-    console.log("after createCharity");
-    console.log(result);
 
+
+    loadCharites(charityFactoryContract);
+    createCharity(charityFactoryContract);
     loadCharites(charityFactoryContract);
 
   }, []);
 
-  function loadCharites(charityFactoryContract) {
+  const loadCharites = async (charityFactoryContract) => {
+
     console.log("before getCharities");
-    let result = charityFactoryContract.getCharities();
+    let result = await charityFactoryContract.getCharities();
     console.log("after getCharities");
     console.log(result);
     setCharities(result);
-  }
+  };
+  const createCharity = async (charityFactoryContract) => {
+    console.log("before createCharity");
+    const options = {value: ethers.utils.parseEther("0.01"), gasLimit :3000000000}
+    var result = await charityFactoryContract.createCharity(0,10,1665031732,"asdf","0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", options);
+    console.log("after createCharity");
+    console.log(result);
+  };
 
   function handleCreate() {
 
