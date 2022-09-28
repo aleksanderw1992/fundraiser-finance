@@ -1,14 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
-import ethers from 'ethers'
-import {
-  charityFactoryAddress,
-  charityFactoryAbi,
-  badgeAddress,
-  badgeAbi,
-  usdcAddress,
-  usdcAbi,
-} from "../constants";
+import {ethers} from 'ethers'
+import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
 
 import React from 'react';
 
