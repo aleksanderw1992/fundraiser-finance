@@ -16,7 +16,7 @@ function App() {
   }
 
   React.useEffect(() => {
-    const chainId = "31337"; // TODO
+    const chainId = "31337";
     precondition(!!charityFactoryAddress[chainId] &&
       !!badgeAddress[chainId] &&
       !!usdcAddress[chainId], `Could not find proper address for chain id ${chainId}`);
@@ -45,20 +45,27 @@ function App() {
       badgeContract: badgeContract,
       usdcContract: usdcContract
     });
+    console.log("before createCharity");
+    var result = charityFactoryContract.createCharity(0,10,1665031732,"asdf","0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
+    console.log("after createCharity");
+    console.log(result);
+
     loadCharites(charityFactoryContract);
 
   }, []);
 
-  function loadCharites() {
-    let result = contracts.charityFactoryContract.charities();
-    setCharities(result);
+  function loadCharites(charityFactoryContract) {
+    console.log("before getCharities");
+    let result = charityFactoryContract.getCharities();
+    console.log("after getCharities");
     console.log(result);
+    setCharities(result);
   }
 
   function handleCreate() {
-    contracts.charityFactoryContract.createCharity(0,10,1665031732,"asdf","0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266");
-    loadCharites();
+
   }
+
 
   return (
     <div className="App">

@@ -34,6 +34,7 @@ contract CharityFactoryTest is Test {
 
     // goal is either 10 ETH (0.01 already raised) or 20 000 USDC (20 USDC already raised)
     function createDefaultCharityTenEthGoal() public returns(uint256) {
+        vm.warp(creationTimestamp);
         return contractUnderTests.createCharity{value : ETH_MIN_PRICE}
         (CharityFactory.Currency.ETH, 10, charityDefaultEndTimestamp, "successful fundraising", beneficiary);
     }
@@ -300,6 +301,22 @@ contract CharityFactoryTest is Test {
         vm.stopPrank();
     }
     
-
+    function testGetCharities() public {
+        vm.deal(contributorAddress, 100 ether);
+        
+        assertEq(contractUnderTests.getCharities().length, 0);
+        uint256 firstCharityId = createDefaultCharityTenEthGoal();
+        assertEq(contractUnderTests.getCharities().length, 1);
+        uint256 secondCharityId = createAndCloseCharityGoalMet();
+        assertEq(contractUnderTests.getCharities().length, 2);
+        uint256 thirdCharityId = createAndCloseCharityGoalNotMet();
+        assertEq(contractUnderTests.getCharities().length, 3);
     
+        (,,,,,,CharityFactory.CharityStatus firstCharityStatus,,) = contractUnderTests.charities(firstCharityId);
+        assertTrue(firstCharityStatus == CharityFactory.CharityStatus.ONGOING);
+        (,,,,,,CharityFactory.CharityStatus secondCharityStatus,,) = contractUnderTests.charities(secondCharityId);
+        assertTrue(secondCharityStatus == CharityFactory.CharityStatus.CLOSED_GOAL_MET);
+        (,,,,,,CharityFactory.CharityStatus thirdCharityStatus,,) = contractUnderTests.charities(thirdCharityId);
+        assertTrue(thirdCharityStatus == CharityFactory.CharityStatus.CLOSED_GOAL_NOT_MET);
+    }
 }

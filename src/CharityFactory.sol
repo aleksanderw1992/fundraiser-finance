@@ -215,6 +215,10 @@ contract CharityFactory {
             });
         emit ReceiveNtf(msg.sender, charityId);
     }
+
+    function getCharities() public view returns(Charity[] memory) {
+        return charities;
+    }
     
     ///@notice Get latest price of ETH in USDC. Note - assuming 1 USD = 1 USDC which might not always be the case
     ///@return ethPrice price of ETH in USDC
