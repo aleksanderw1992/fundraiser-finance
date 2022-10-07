@@ -47,9 +47,6 @@ function App() {
     });
 
 
-    loadCharites(charityFactoryContract);
-    createCharity(charityFactoryContract);
-    loadCharites(charityFactoryContract);
 
   }, []);
 
@@ -70,15 +67,18 @@ function App() {
   };
 
   function handleCreate() {
-
+    console.log('handleCreate');
+    loadCharites(contracts.charityFactoryContract);
+    createCharity(contracts.charityFactoryContract);
+    loadCharites(contracts.charityFactoryContract);
   }
 
 
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" onClick={handleCreate}/>
-        <p>
+        <img src={logo} className="App-logo" alt="logo"/>
+        <p onClick={handleCreate}>
           Edit <code>src/App.js</code> and save to reload.
         </p>
         <a
