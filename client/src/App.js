@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
-
+import mockCharityFactory from "./helpers/mockCharityFactory";
 import React from 'react';
 
 function App() {
@@ -73,12 +73,19 @@ function App() {
     loadCharites(contracts.charityFactoryContract);
   }
 
+  function mockHandleCreate() {
+    mockCharityFactory.createCharity(0, 10, new Date().getMilliseconds(), 'asdf', 'me');
+    let newArr = mockCharityFactory.getCharities();
+    setCharities(newArr);
+    console.log(newArr);
+  }
+
 
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo"/>
-        <p onClick={handleCreate}>
+        <p onClick={mockHandleCreate}>
           Edit <code>src/App.js</code> and save to reload.
         </p>
         <a
@@ -90,6 +97,11 @@ function App() {
           Learn React
         </a>
       </header>
+      <div>
+        {charities.map((charity) =>
+          <div>{charity.id} {charity.endPeriod}</div>
+        )}
+      </div>
     </div>
   );
 }
