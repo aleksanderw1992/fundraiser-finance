@@ -193,12 +193,14 @@ function App() {
   function mockTryCloseCharity(charityId) {
     setCharities(prev => {
       prev.filter(charity => charity.id == charityId).forEach(charity => charity.status = 1); // CLOSED_GOAL_MET
-      return prev;
+      return [...prev]; // change reference of returned array to force re-rendering
     });
   }
 
   return (
       <div>
+        {/*todo - delete after development*/}
+        <button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</button>
         <fieldset>
         <legend>Filter charities</legend>
           <label htmlFor="eligibleToReceiveNft">
@@ -343,7 +345,6 @@ function App() {
 
 export default App;
 /*
-0. first created charity not working
 1. states for those forms so that it is clickable
 2. chakra-ui interface
  */
