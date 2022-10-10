@@ -173,23 +173,24 @@ function App() {
   }
 
   function mockDonateEth(charityId, eth) {
-    setCharities(prev =>{
+    const newEth = charities.filter(charity => charity.id == charityId)[0].ethRaised + parseFloat(eth);
+    setCharities(prev => {
       console.log(prev);
-      prev.filter(charity => charity.id == charityId).forEach(charity => charity.ethRaised+=parseFloat(eth));
+      prev.filter(charity => charity.id == charityId).forEach(charity => charity.ethRaised = newEth);
       return prev;
     });
   }
 
   function mockDonateUsdc(charityId, usdc) {
-    setCharities(prev =>{
-      console.log(prev);
-      prev.filter(charity => charity.id == charityId).forEach(charity => charity.usdcRaised+=parseFloat(usdc));
+    const newUsdc = charities.filter(charity => charity.id == charityId)[0].usdcRaised + parseFloat(usdc);
+    setCharities(prev => {
+      prev.filter(charity => charity.id == charityId).forEach(charity => charity.usdcRaised = newUsdc);
       return prev;
     });
   }
 
-  function  mockTryCloseCharity(charityId) {
-    setCharities(prev =>{
+  function mockTryCloseCharity(charityId) {
+    setCharities(prev => {
       prev.filter(charity => charity.id == charityId).forEach(charity => charity.status = 1); // CLOSED_GOAL_MET
       return prev;
     });
@@ -341,6 +342,7 @@ function App() {
 
 export default App;
 /*
+0. first created charity not working
 1. states for those forms so that it is clickable
 2. chakra-ui interface
  */
