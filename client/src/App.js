@@ -14,7 +14,7 @@ function App() {
   const [createFormData, setCreateFormData] = React.useState(
       {
         currency: "0",
-        goal: "0",
+        goal: 0,
         description: "",
         beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
 
@@ -23,7 +23,7 @@ function App() {
   const [donateFormData, setDonateFormData] = React.useState(
       {
         donateCurrency: "0",
-        contribution: "0",
+        contribution: 0,
         charityId: null
 
       }
@@ -108,14 +108,22 @@ function App() {
   */
   function donate(event) {
     event.preventDefault();
-    console.log(donateFormData);
+    switch (donateFormData.donateCurrency) {
+      case '0':
+        mockDonateEth(donateFormData.charityId,donateFormData.contribution);
+        break;
+      case '1':
+        mockDonateUsdc(donateFormData.charityId,donateFormData.contribution);
+        break;
+    }
+    // close modal
     setDonateFormData(prevFormData => {
       return {
         ...prevFormData,
+        contribution: 0,
         charityId: null
       }
-    })
-    console.log(donateFormData);
+    });
   }
 
   function donateModalOpen(charityId, event) {
@@ -130,12 +138,6 @@ function App() {
 
   function tryCloseCharity(charityId) {
     mockTryCloseCharity(charityId);
-    setDonateFormData(prevFormData => {
-      return {
-        ...prevFormData,
-        charityId: charityId
-      }
-    })
   }
 
   function mockHandleCreate(event) {
@@ -145,7 +147,8 @@ function App() {
         new Date().getMilliseconds(),
         createFormData.description,
         createFormData.beneficiary);
-    console.log(charities);
+    // console.log(' -- mockHandleCreate - after creation:');
+    // console.log(charities);
   }
 
 
@@ -165,12 +168,14 @@ function App() {
       ethRaised:0,
       usdcRaised:0
     }]);
+    // console.log(' -- mockCreateCharity - after creation:');
+    // console.log(charities);
   }
 
   function mockDonateEth(charityId, eth) {
     setCharities(prev =>{
       console.log(prev);
-      prev.filter(charity => charity.id == charityId).ethRaised+=eth;
+      prev.filter(charity => charity.id == charityId).forEach(charity => charity.ethRaised+=parseFloat(eth));
       return prev;
     });
   }
@@ -178,14 +183,14 @@ function App() {
   function mockDonateUsdc(charityId, usdc) {
     setCharities(prev =>{
       console.log(prev);
-      prev.filter(charity => charity.id == charityId).usdcRaised+=usdc
+      prev.filter(charity => charity.id == charityId).forEach(charity => charity.usdcRaised+=parseFloat(usdc));
       return prev;
     });
   }
 
-  function mockTryCloseCharity(charityId) {
+  function  mockTryCloseCharity(charityId) {
     setCharities(prev =>{
-      prev.charities.filter(charity => charity.id == charityId).status = 1; // CLOSED_GOAL_MET
+      prev.filter(charity => charity.id == charityId).forEach(charity => charity.status = 1); // CLOSED_GOAL_MET
       return prev;
     });
   }
@@ -284,7 +289,7 @@ function App() {
         {(donateFormData.charityId ) &&
         <form onSubmit={donate}>
           <legend>
-            Donate to charity modal
+            Donate to charity modal -> id: {donateFormData.charityId}
           </legend>
           <label>
             Choose the currency:
@@ -317,7 +322,14 @@ function App() {
           .filter((charity) => filterFormData.status ==='allCharities'?true : charity.status === filterFormData.status)
           .map((charity) =>
               <div id={charity.id} key={charity.id}>
-                {charity.id} {charity.currency} {charity.goal} {charity.description} {charity.endPeriod} {charity.status}
+                id:{charity.id} |
+                currency:{charity.currency} |
+                goal:{charity.goal} |
+                desc:{charity.description} |
+                end:{charity.endPeriod} |
+                status:{charity.status} |
+                usdcRaised:{charity.usdcRaised} |
+                ethRaised:{charity.ethRaised} |
                 <button onClick={(event) => donateModalOpen(charity.id, event)}>Donate</button>
                 <button onClick={() => tryCloseCharity(charity.id)}>Attempt closing</button>
               </div>
