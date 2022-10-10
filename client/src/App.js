@@ -266,7 +266,7 @@ function App() {
           .filter((charity) => filterFormData.status ==='allCharities'?true : charity.status === filterFormData.status)
           .map((charity) =>
               <div id={charity.id} key={charity.id}>
-                {charity.id} {charity.description} {charity.endPeriod} {charity.status}
+                {charity.id} {charity.currency} {charity.goal} {charity.description} {charity.endPeriod} {charity.status}
                 <button onClick={() => donateModalOpen(charity.id)}>Donate</button>
                 <button onClick={() => tryCloseCharity(charity.id)}>Attempt closing</button>
               </div>
