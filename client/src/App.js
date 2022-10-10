@@ -22,7 +22,7 @@ function App() {
   );
   const [donateFormData, setDonateFormData] = React.useState(
       {
-        currency: "0",
+        donateCurrency: "0",
         contribution: "0",
         charityId: null
 
@@ -108,13 +108,14 @@ function App() {
   */
   function donate(event) {
     event.preventDefault();
-    alert(donateFormData.currency)
+    console.log(donateFormData);
     setDonateFormData(prevFormData => {
       return {
         ...prevFormData,
         charityId: null
       }
     })
+    console.log(donateFormData);
   }
 
   function donateModalOpen(charityId, event) {
@@ -290,7 +291,7 @@ function App() {
             <select
                 id="donateCurrency"
                 name="donateCurrency"
-                value={donateFormData.currency}
+                value={donateFormData.donateCurrency}
                 onChange={handleChange(setDonateFormData)}
 
             >
