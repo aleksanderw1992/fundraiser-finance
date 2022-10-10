@@ -8,7 +8,7 @@ function App() {
   const [contracts, setContracts] = React.useState([]);
   const [filterFormData, setFilterFormData] = React.useState(
       {
-        status: "allCharities"
+        status: "ALL_CHARITIES"
       }
   );
   const [createFormData, setCreateFormData] = React.useState(
@@ -28,6 +28,12 @@ function App() {
 
       }
   );
+  const enumCharityStatusToString = {
+    0:'ONGOING',
+    1:'CLOSED_GOAL_MET',
+    2:'CLOSED_GOAL_NOT_MET'
+  }
+
   function handleChange(setFormData) {
     return function(event) {
       console.log(event)
@@ -106,6 +112,8 @@ function App() {
   /*
   below are form methods
   */
+
+
   function donate(event) {
     event.preventDefault();
     switch (donateFormData.donateCurrency) {
@@ -203,38 +211,49 @@ function App() {
         <button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</button>
         <fieldset>
         <legend>Filter charities</legend>
-          <label htmlFor="eligibleToReceiveNft">
+          <label htmlFor="ONGOING">
+            Show only ongoing charities
+            <input
+                type="radio"
+                name="status"
+                id="ONGOING"
+                value="ONGOING"
+                onChange={handleChange(setFilterFormData)}
+                checked={filterFormData.status=== "ONGOING"}
+            ></input>
+          </label>
+          <label htmlFor="CLOSED_GOAL_MET">
             Finished successfully - ready to receive NFT!
             <input
                 type="radio"
                 name="status"
-                id="eligibleToReceiveNft"
-                value="eligibleToReceiveNft"
+                id="CLOSED_GOAL_MET"
+                value="CLOSED_GOAL_MET"
                 onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "eligibleToReceiveNft"}
+                checked={filterFormData.status=== "CLOSED_GOAL_MET"}
             ></input>
           </label>
-          <label htmlFor="eligibleToWithdrawFunds">
+          <label htmlFor="CLOSED_GOAL_NOT_MET">
             Finished without success - ready to withdraw funds
             <input
                 type="radio"
                 name="status"
-                id="eligibleToWithdrawFunds"
-                value="eligibleToWithdrawFunds"
+                id="CLOSED_GOAL_NOT_MET"
+                value="CLOSED_GOAL_NOT_MET"
                 onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "eligibleToWithdrawFunds"}
+                checked={filterFormData.status=== "CLOSED_GOAL_NOT_MET"}
 
             ></input>
           </label>
-          <label htmlFor="allCharities">
+          <label htmlFor="ALL_CHARITIES">
             Show me all charities
             <input
                 type="radio"
                 name="status"
-                id="allCharities"
-                value="allCharities"
+                id="ALL_CHARITIES"
+                value="ALL_CHARITIES"
                 onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "allCharities"}
+                checked={filterFormData.status=== "ALL_CHARITIES"}
 
             ></input>
           </label>
@@ -323,7 +342,7 @@ function App() {
         }
         <div>
           {charities
-          .filter((charity) => filterFormData.status ==='allCharities'?true : charity.status === filterFormData.status)
+          .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
               <div id={charity.id} key={charity.id}>
                 id:{charity.id} |
