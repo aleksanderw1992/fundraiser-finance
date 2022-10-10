@@ -6,6 +6,7 @@ import React from 'react';
 
 function App() {
   const [charities, setCharities] = React.useState([]);
+  const mockCharityFactoryInstance = mockCharityFactory(charities, setCharities);
   const [contracts, setContracts] = React.useState([]);
   const [filterFormData, setFilterFormData] = React.useState(
       {
@@ -104,13 +105,12 @@ function App() {
   }
 
   function mockHandleCreate() {
-    mockCharityFactory.createCharity(createFormData.currency,
+    mockCharityFactoryInstance.createCharity(createFormData.currency,
         createFormData.goal,
         new Date().getMilliseconds(),
         createFormData.description,
         createFormData.beneficiary);
-    let newArr = mockCharityFactory.getCharities();
-    setCharities(newArr);
+    let newArr = mockCharityFactoryInstance.getCharities();
     console.log(newArr);
   }
 

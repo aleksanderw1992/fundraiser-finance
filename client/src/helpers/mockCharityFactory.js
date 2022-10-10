@@ -1,7 +1,4 @@
-let mockCharityFactory = (function() {
-  var storage = {
-    charities: []
-  };
+let mockCharityFactory = function(charities, setCharities) {
 
   return {
     "badge": function () {
@@ -11,8 +8,8 @@ let mockCharityFactory = (function() {
 
     },
     "createCharity": function (currency, goal, endPeriod, description, beneficiary) {
-      storage.charities.push({
-        id: storage.charities.length,
+      setCharities(prev => [...prev, {
+        id: prev.length,
         currency:currency,
         goal:goal,
         endPeriod:endPeriod,
@@ -21,27 +18,36 @@ let mockCharityFactory = (function() {
         status:0,
         ethRaised:0,
         usdcRaised:0
-      });
+      }]);
     },
     "donateEth": function(charityId, eth) {
-      storage.charities.filter(charity => charity.id == charityId).ethRaised+=eth
+      setCharities(prev =>{
+        prev.filter(charity => charity.id == charityId).ethRaised+=eth;
+        return prev;
+      });
     },
     "donateUsdc": function(charityId, usdc) {
-      storage.charities.filter(charity => charity.id == charityId).usdcRaised+=usdc
+      setCharities(prev =>{
+        prev.filter(charity => charity.id == charityId).usdcRaised+=usdc
+        return prev;
+      });
     },
     "getCharities": function(){
-      return storage.charities;
+      return charities;
     },
     "receiveNtf": function(charityId) {
       // not supported
     },
     "tryCloseCharity": function(charityId) {
-      storage.charities.filter(charity => charity.id == charityId).status = 1; // CLOSED_GOAL_MET
+      setCharities(prev =>{
+        prev.charities.filter(charity => charity.id == charityId).status = 1; // CLOSED_GOAL_MET
+        return prev;
+      });
     },
     "withdrawContribution": function(charityId) {
       // not supported
     },
   };
-})();
+};
 
 export default mockCharityFactory;
