@@ -126,7 +126,7 @@ function App() {
     });
   }
 
-  function donateModalOpen(charityId, event) {
+  function donateModalOpen(event, charityId) {
     event.preventDefault();
     setDonateFormData(prevFormData => {
       return {
@@ -136,7 +136,8 @@ function App() {
     })
   }
 
-  function tryCloseCharity(charityId) {
+  function tryCloseCharity(event, charityId) {
+    event.preventDefault();
     mockTryCloseCharity(charityId);
   }
 
@@ -287,7 +288,7 @@ function App() {
           <button>+</button>
         </form>
 
-        {(donateFormData.charityId ) &&
+        {(donateFormData.charityId !=null ) &&
         <form onSubmit={donate}>
           <legend>
             Donate to charity modal -> id: {donateFormData.charityId}
@@ -331,8 +332,8 @@ function App() {
                 status:{charity.status} |
                 usdcRaised:{charity.usdcRaised} |
                 ethRaised:{charity.ethRaised} |
-                <button onClick={(event) => donateModalOpen(charity.id, event)}>Donate</button>
-                <button onClick={() => tryCloseCharity(charity.id)}>Attempt closing</button>
+                <button onClick={(event) => donateModalOpen(event, charity.id)}>Donate</button>
+                <button onClick={(event) => tryCloseCharity(event, charity.id)}>Attempt closing</button>
               </div>
           )}
         </div>
