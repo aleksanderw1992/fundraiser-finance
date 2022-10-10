@@ -110,8 +110,7 @@ function App() {
         new Date().getMilliseconds(),
         createFormData.description,
         createFormData.beneficiary);
-    let newArr = mockCharityFactoryInstance.getCharities();
-    console.log(newArr);
+    console.log(charities);
   }
 
   function donate() {
