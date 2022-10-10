@@ -29,7 +29,6 @@ function App() {
 
       }
   );
-
   function handleChange(setFormData) {
     return function(event) {
       console.log(event)
@@ -264,13 +263,12 @@ function App() {
         }
         <div>
           {charities
-          // .filter((charity) => filterFormData.status ==='allCharities'?true : charity.status === filterFormData.status)
-          .filter((charity) => false) // When uncommented -> Too many re-renders. React limits the number of renders to prevent an infinite loop.
+          .filter((charity) => filterFormData.status ==='allCharities'?true : charity.status === filterFormData.status)
           .map((charity) =>
               <div id={charity.id} key={charity.id}>
                 {charity.id} {charity.description} {charity.endPeriod} {charity.status}
-                <button onClick={donateModalOpen(charity.id)}>Donate</button>
-                <button onClick={tryCloseCharity(charity.id)}>Attempt closing</button>
+                <button onClick={() => donateModalOpen(charity.id)}>Donate</button>
+                <button onClick={() => tryCloseCharity(charity.id)}>Attempt closing</button>
               </div>
           )}
         </div>
