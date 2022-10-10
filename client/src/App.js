@@ -1,12 +1,10 @@
 import './App.css';
 import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
-import mockCharityFactory from "./helpers/mockCharityFactory";
 import React from 'react';
 
 function App() {
   const [charities, setCharities] = React.useState([]);
-  const mockCharityFactoryInstance = mockCharityFactory(charities, setCharities);
   const [contracts, setContracts] = React.useState([]);
   const [filterFormData, setFilterFormData] = React.useState(
       {
@@ -104,16 +102,13 @@ function App() {
     loadCharites(contracts.charityFactoryContract);
   }
 
-  function mockHandleCreate() {
-    mockCharityFactoryInstance.createCharity(createFormData.currency,
-        createFormData.goal,
-        new Date().getMilliseconds(),
-        createFormData.description,
-        createFormData.beneficiary);
-    console.log(charities);
-  }
 
-  function donate() {
+  /*
+  below are form methods
+  */
+  function donate(event) {
+    event.preventDefault();
+    alert(donateFormData.currency)
     setDonateFormData(prevFormData => {
       return {
         ...prevFormData,
@@ -122,7 +117,8 @@ function App() {
     })
   }
 
-  function donateModalOpen(charityId) {
+  function donateModalOpen(charityId, event) {
+    event.preventDefault();
     setDonateFormData(prevFormData => {
       return {
         ...prevFormData,
@@ -132,13 +128,65 @@ function App() {
   }
 
   function tryCloseCharity(charityId) {
-    mockCharityFactory.tryCloseCharity(charityId);
+    mockTryCloseCharity(charityId);
     setDonateFormData(prevFormData => {
       return {
         ...prevFormData,
         charityId: charityId
       }
     })
+  }
+
+  function mockHandleCreate(event) {
+    event.preventDefault();
+    mockCreateCharity(createFormData.currency,
+        createFormData.goal,
+        new Date().getMilliseconds(),
+        createFormData.description,
+        createFormData.beneficiary);
+    console.log(charities);
+  }
+
+
+  /*
+  below are mock functions that should be replaced by calling contract with etherjs
+  */
+
+  function mockCreateCharity(currency, goal, endPeriod, description, beneficiary) {
+    setCharities(prev => [...prev, {
+      id: prev.length,
+      currency:currency,
+      goal:goal,
+      endPeriod:endPeriod,
+      description:description,
+      beneficiary:beneficiary,
+      status:0,
+      ethRaised:0,
+      usdcRaised:0
+    }]);
+  }
+
+  function mockDonateEth(charityId, eth) {
+    setCharities(prev =>{
+      console.log(prev);
+      prev.filter(charity => charity.id == charityId).ethRaised+=eth;
+      return prev;
+    });
+  }
+
+  function mockDonateUsdc(charityId, usdc) {
+    setCharities(prev =>{
+      console.log(prev);
+      prev.filter(charity => charity.id == charityId).usdcRaised+=usdc
+      return prev;
+    });
+  }
+
+  function mockTryCloseCharity(charityId) {
+    setCharities(prev =>{
+      prev.charities.filter(charity => charity.id == charityId).status = 1; // CLOSED_GOAL_MET
+      return prev;
+    });
   }
 
   return (
@@ -243,7 +291,9 @@ function App() {
                 id="donateCurrency"
                 name="donateCurrency"
                 value={donateFormData.currency}
-                onChange={handleChange(setDonateFormData)}>
+                onChange={handleChange(setDonateFormData)}
+
+            >
               <option value="0">ETH</option>
               <option value="1">USDC</option>
             </select>
@@ -255,6 +305,7 @@ function App() {
                 name="contribution"
                 id="contribution"
                 value={donateFormData.contribution}
+                onChange={handleChange(setDonateFormData)}
             ></input>
           </label>
           <button>+</button>
@@ -266,7 +317,7 @@ function App() {
           .map((charity) =>
               <div id={charity.id} key={charity.id}>
                 {charity.id} {charity.currency} {charity.goal} {charity.description} {charity.endPeriod} {charity.status}
-                <button onClick={() => donateModalOpen(charity.id)}>Donate</button>
+                <button onClick={(event) => donateModalOpen(charity.id, event)}>Donate</button>
                 <button onClick={() => tryCloseCharity(charity.id)}>Attempt closing</button>
               </div>
           )}
