@@ -3,6 +3,8 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
 import React from 'react';
 
+import {Button, Container, Radio, RadioGroup, Stack} from '@chakra-ui/react'
+
 function App() {
   const [charities, setCharities] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
@@ -42,6 +44,17 @@ function App() {
         return {
           ...prevFormData,
           [name]: type === "checkbox" ? checked : value
+        }
+      })
+    }
+  }
+
+  function handleRadioGroupChange(setFormData, field) {
+    return function (newVal) {
+      setFormData(prevFormData => {
+        return {
+          ...prevFormData,
+          [field]: newVal
         }
       })
     }
@@ -206,60 +219,24 @@ function App() {
   }
 
   return (
-      <div>
+      <Container>
         {/*todo - delete after development*/}
-        <button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</button>
-        <fieldset>
-        <legend>Filter charities</legend>
-          <label htmlFor="ONGOING">
-            Show only ongoing charities
-            <input
-                type="radio"
-                name="status"
-                id="ONGOING"
-                value="ONGOING"
-                onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "ONGOING"}
-            ></input>
-          </label>
-          <label htmlFor="CLOSED_GOAL_MET">
-            Finished successfully - ready to receive NFT!
-            <input
-                type="radio"
-                name="status"
-                id="CLOSED_GOAL_MET"
-                value="CLOSED_GOAL_MET"
-                onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "CLOSED_GOAL_MET"}
-            ></input>
-          </label>
-          <label htmlFor="CLOSED_GOAL_NOT_MET">
-            Finished without success - ready to withdraw funds
-            <input
-                type="radio"
-                name="status"
-                id="CLOSED_GOAL_NOT_MET"
-                value="CLOSED_GOAL_NOT_MET"
-                onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "CLOSED_GOAL_NOT_MET"}
+        <form>
+          <Button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</Button>
+          <fieldset>
+            <legend>Filter charities</legend>
+            <RadioGroup onChange={handleRadioGroupChange(setFilterFormData, 'status')} value={filterFormData.status}>
+              <Stack>
+                <Radio value='ONGOING'>Show only ongoing charities</Radio>
+                <Radio value='CLOSED_GOAL_MET'>Finished successfully - ready to receive NFT!</Radio>
+                <Radio value='CLOSED_GOAL_NOT_MET'>Finished without success - ready to withdraw funds</Radio>
+                <Radio value='ALL_CHARITIES'>Show me all charities</Radio>
+              </Stack>
+            </RadioGroup>
+          </fieldset>
+        </form>
 
-            ></input>
-          </label>
-          <label htmlFor="ALL_CHARITIES">
-            Show me all charities
-            <input
-                type="radio"
-                name="status"
-                id="ALL_CHARITIES"
-                value="ALL_CHARITIES"
-                onChange={handleChange(setFilterFormData)}
-                checked={filterFormData.status=== "ALL_CHARITIES"}
-
-            ></input>
-          </label>
-        </fieldset>
-
-        <p>
+          <p>
           Create new charity
         </p>
         <form onSubmit={mockHandleCreate}>
@@ -358,7 +335,7 @@ function App() {
               </div>
           )}
         </div>
-      </div>
+      </Container>
   );
 }
 
