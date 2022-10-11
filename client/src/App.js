@@ -3,7 +3,7 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
 import React from 'react';
 
-import {Button, Container, Radio, RadioGroup, Stack, Select} from '@chakra-ui/react'
+import {Button, Container, FormLabel, NumberInput, NumberInputField, Radio, RadioGroup, Select, Stack, Input} from '@chakra-ui/react'
 
 function App() {
   const [charities, setCharities] = React.useState([]);
@@ -18,7 +18,8 @@ function App() {
         currency: "0",
         goal: 0,
         description: "",
-        beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
+        beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580",
+        endDate: 0
 
       }
   );
@@ -49,7 +50,7 @@ function App() {
     }
   }
 
-  function handleRadioGroupChange(setFormData, field) {
+  function handleChangeChakraUiComponents(setFormData, field) {
     return function (newVal) {
       setFormData(prevFormData => {
         return {
@@ -170,7 +171,7 @@ function App() {
     event.preventDefault();
     mockCreateCharity(createFormData.currency,
         createFormData.goal,
-        new Date().getMilliseconds(),
+        createFormData.endDate,
         createFormData.description,
         createFormData.beneficiary);
     // console.log(' -- mockHandleCreate - after creation:');
@@ -229,7 +230,7 @@ function App() {
           <Button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</Button>
           <fieldset>
             <legend>Filter charities</legend>
-            <RadioGroup onChange={handleRadioGroupChange(setFilterFormData, 'status')} value={filterFormData.status}>
+            <RadioGroup onChange={handleChangeChakraUiComponents(setFilterFormData, 'status')} value={filterFormData.status}>
               <Stack>
                 <Radio value='ONGOING'>Show only ongoing charities</Radio>
                 <Radio value='CLOSED_GOAL_MET'>Finished successfully - ready to receive NFT!</Radio>
@@ -243,49 +244,60 @@ function App() {
         <form onSubmit={mockHandleCreate}>
           <fieldset>
             <legend>Create new charity</legend>
+            <FormLabel htmlFor='currency'>Choose the currency</FormLabel>
             <Select
-                placeholder='Choose the currency'
                 id="currency"
                 name="currency"
                 value={createFormData.currency}
                 onChange={handleChange(setCreateFormData)}
+                variant='outline'
             >
               <option value='0'>ETH</option>
               <option value='1'>USDC</option>
             </Select>
-          <label htmlFor="goal">
-            Choose goal:
-            <input
-                type="number"
+            <FormLabel htmlFor='goal'>Choose goal:</FormLabel>
+            <NumberInput
+                defaultValue={0}
+                min={0}
                 name="goal"
                 id="goal"
-                value={createFormData.goal}
-                onChange={handleChange(setCreateFormData)}
-            ></input>
-          </label>
-          <label htmlFor="description">
-            Write a few words about it:
-            <input
+                onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
+            >
+              <NumberInputField/>
+            </NumberInput>
+            <FormLabel htmlFor='description'>Write a few words about it:</FormLabel>
+            <Input
+                placeholder="Description ... "
                 type="text"
                 name="description"
                 id="description"
                 value={createFormData.description}
                 onChange={handleChange(setCreateFormData)}
-            ></input>
-          </label>
-          <label htmlFor="beneficiary">
-            Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
-            address but please double check this
-            <input
+            />
+            <FormLabel htmlFor='beneficiary'>
+              Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
+              address but please double check this
+            </FormLabel>
+            <Input
+                placeholder="Eg. 0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
                 type="text"
                 name="beneficiary"
                 id="beneficiary"
                 value={createFormData.beneficiary}
                 onChange={handleChange(setCreateFormData)}
-            ></input>
-          </label>
-          {/*to do end date*/}
-          <button>+</button>
+            />
+            <FormLabel htmlFor='endDate'>
+              When fundraising is going to end?
+            </FormLabel>
+            <Input
+                placeholder="Eg. 2022-10-23T18:58"
+                type="datetime-local"
+                name="endDate"
+                id="endDate"
+                value={createFormData.endDate}
+                onChange={handleChange(setCreateFormData)}
+            />
+            <Button type="submit" color='red' isDisabled={false}>+</Button>
           </fieldset>
         </form>
 
