@@ -3,7 +3,7 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
 import React from 'react';
 
-import {Button, Container, FormLabel, NumberInput, NumberInputField, Radio, RadioGroup, Select, Stack, Input} from '@chakra-ui/react'
+import {Button, Container, FormLabel, NumberInput, NumberInputField, Radio, RadioGroup, Select, Stack, Input, FormHelperText, FormControl} from '@chakra-ui/react'
 
 function App() {
   const [charities, setCharities] = React.useState([]);
@@ -244,60 +244,75 @@ function App() {
         <form onSubmit={mockHandleCreate}>
           <fieldset>
             <legend>Create new charity</legend>
-            <FormLabel htmlFor='currency'>Choose the currency</FormLabel>
-            <Select
-                id="currency"
-                name="currency"
-                value={createFormData.currency}
-                onChange={handleChange(setCreateFormData)}
-                variant='outline'
-            >
-              <option value='0'>ETH</option>
-              <option value='1'>USDC</option>
-            </Select>
-            <FormLabel htmlFor='goal'>Choose goal:</FormLabel>
-            <NumberInput
-                defaultValue={0}
-                min={0}
-                name="goal"
-                id="goal"
-                onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
-            >
-              <NumberInputField/>
-            </NumberInput>
-            <FormLabel htmlFor='description'>Write a few words about it:</FormLabel>
-            <Input
-                placeholder="Description ... "
-                type="text"
-                name="description"
-                id="description"
-                value={createFormData.description}
-                onChange={handleChange(setCreateFormData)}
-            />
-            <FormLabel htmlFor='beneficiary'>
-              Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
-              address but please double check this
-            </FormLabel>
-            <Input
-                placeholder="Eg. 0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
-                type="text"
-                name="beneficiary"
-                id="beneficiary"
-                value={createFormData.beneficiary}
-                onChange={handleChange(setCreateFormData)}
-            />
-            <FormLabel htmlFor='endDate'>
-              When fundraising is going to end?
-            </FormLabel>
-            <Input
-                placeholder="Eg. 2022-10-23T18:58"
-                type="datetime-local"
-                name="endDate"
-                id="endDate"
-                value={createFormData.endDate}
-                onChange={handleChange(setCreateFormData)}
-            />
-            <Button type="submit" color='red' isDisabled={false}>+</Button>
+            <FormControl isRequired>
+              <FormLabel htmlFor='currency'>Currency</FormLabel>
+              <Select
+                  id="currency"
+                  name="currency"
+                  value={createFormData.currency}
+                  onChange={handleChange(setCreateFormData)}
+                  variant='outline'
+              >
+                <option value='0'>ETH</option>
+                <option value='1'>USDC</option>
+              </Select>
+              <FormHelperText>Choose the currency in which you would like the goal to be set!</FormHelperText>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel htmlFor='goal'>Goal</FormLabel>
+              <NumberInput
+                  defaultValue={0}
+                  min={0}
+                  name="goal"
+                  id="goal"
+                  onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
+              >
+                <NumberInputField/>
+              </NumberInput>
+              <FormHelperText>Choose the amount of currency that you need to raise</FormHelperText>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel htmlFor='description'>Description</FormLabel>
+              <Input
+                  placeholder="Description ... "
+                  type="text"
+                  name="description"
+                  id="description"
+                  value={createFormData.description}
+                  onChange={handleChange(setCreateFormData)}
+              />
+              <FormHelperText>Write a few words about your fundraising</FormHelperText>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel htmlFor='beneficiary'>
+                Beneficiary address
+              </FormLabel>
+              <Input
+                  placeholder="Eg. 0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
+                  type="text"
+                  name="beneficiary"
+                  id="beneficiary"
+                  value={createFormData.beneficiary}
+                  onChange={handleChange(setCreateFormData)}
+              />
+              <FormHelperText>Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
+                address but please double check this</FormHelperText>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel htmlFor='endDate'>
+                Deadline / End date
+              </FormLabel>
+              <Input
+                  placeholder="Eg. 2022-10-23T18:58"
+                  type="datetime-local"
+                  name="endDate"
+                  id="endDate"
+                  value={createFormData.endDate}
+                  onChange={handleChange(setCreateFormData)}
+              />
+              <FormHelperText>When fundraising is going to end?</FormHelperText>
+            </FormControl>
+            <Button type="submit" color='red' >+</Button>
           </fieldset>
         </form>
 
@@ -355,7 +370,3 @@ function App() {
 }
 
 export default App;
-/*
-1. states for those forms so that it is clickable
-2. chakra-ui interface
- */
