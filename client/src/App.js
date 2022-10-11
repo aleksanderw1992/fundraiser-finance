@@ -144,6 +144,15 @@ function App() {
   below are form methods
   */
 
+  function resetDonateState() {
+    setDonateFormData(prevFormData => {
+      return {
+        ...prevFormData,
+        contribution: 0,
+        charityId: null
+      }
+    });
+  }
 
   function donate(event) {
     event.preventDefault();
@@ -156,13 +165,7 @@ function App() {
         break;
     }
     // close modal
-    setDonateFormData(prevFormData => {
-      return {
-        ...prevFormData,
-        contribution: 0,
-        charityId: null
-      }
-    });
+    resetDonateState();
   }
 
   function donateModalOpen(event, charityId) {
@@ -243,7 +246,7 @@ function App() {
           <Button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</Button>
           <fieldset>
             <legend>Filter charities</legend>
-            <RadioGroup onChange={handleChangeChakraUiComponents(setFilterFormData, 'status')} value={filterFormData.status}>
+            <RadioGroup onChange={(event) => resetDonateState() & handleChangeChakraUiComponents(setFilterFormData, 'status')(event) } value={filterFormData.status}>
               <Stack>
                 <Radio value='ONGOING'>Show only ongoing charities</Radio>
                 <Radio value='CLOSED_GOAL_MET'>Finished successfully - ready to receive NFT!</Radio>
@@ -386,8 +389,8 @@ function App() {
                 status:{charity.status} |
                 usdcRaised:{charity.usdcRaised} |
                 ethRaised:{charity.ethRaised} |
-                <button onClick={(event) => donateModalOpen(event, charity.id)}>Donate</button>
-                <button onClick={(event) => tryCloseCharity(event, charity.id)}>Attempt closing</button>
+                <Button onClick={(event) => donateModalOpen(event, charity.id)}>Donate</Button>
+                <Button onClick={(event) => tryCloseCharity(event, charity.id)}>Attempt closing</Button>
               </div>
           )}
         </div>
