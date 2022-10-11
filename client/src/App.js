@@ -3,7 +3,7 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
 import React from 'react';
 
-import {Button, Container, Radio, RadioGroup, Stack} from '@chakra-ui/react'
+import {Button, Container, Radio, RadioGroup, Stack, Select} from '@chakra-ui/react'
 
 function App() {
   const [charities, setCharities] = React.useState([]);
@@ -58,6 +58,10 @@ function App() {
         }
       })
     }
+  }
+
+  function handleSelectChange(e) {
+    console.log(e);
   }
 
   function precondition(expression, message) {
@@ -236,21 +240,19 @@ function App() {
           </fieldset>
         </form>
 
-          <p>
-          Create new charity
-        </p>
         <form onSubmit={mockHandleCreate}>
-          <label>
-            Choose the currency:
-            <select
+          <fieldset>
+            <legend>Create new charity</legend>
+            <Select
+                placeholder='Choose the currency'
                 id="currency"
                 name="currency"
                 value={createFormData.currency}
-                onChange={handleChange(setCreateFormData)}>
-              <option value="0">ETH</option>
-              <option value="1">USDC</option>
-            </select>
-          </label>
+                onChange={handleChange(setCreateFormData)}
+            >
+              <option value='0'>ETH</option>
+              <option value='1'>USDC</option>
+            </Select>
           <label htmlFor="goal">
             Choose goal:
             <input
@@ -284,6 +286,7 @@ function App() {
           </label>
           {/*to do end date*/}
           <button>+</button>
+          </fieldset>
         </form>
 
         {(donateFormData.charityId !=null ) &&
