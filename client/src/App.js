@@ -3,7 +3,20 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
 import React from 'react';
 
-import {Button, Container, FormLabel, NumberInput, NumberInputField, Radio, RadioGroup, Select, Stack, Input, FormHelperText, FormControl} from '@chakra-ui/react'
+import {
+  Button,
+  Container,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Input,
+  NumberInput,
+  NumberInputField,
+  Radio,
+  RadioGroup,
+  Select,
+  Stack
+} from '@chakra-ui/react'
 
 function App() {
   const [charities, setCharities] = React.useState([]);
@@ -244,6 +257,7 @@ function App() {
         <form onSubmit={mockHandleCreate}>
           <fieldset>
             <legend>Create new charity</legend>
+
             <FormControl isRequired>
               <FormLabel htmlFor='currency'>Currency</FormLabel>
               <Select
@@ -258,6 +272,7 @@ function App() {
               </Select>
               <FormHelperText>Choose the currency in which you would like the goal to be set!</FormHelperText>
             </FormControl>
+
             <FormControl isRequired>
               <FormLabel htmlFor='goal'>Goal</FormLabel>
               <NumberInput
@@ -283,6 +298,7 @@ function App() {
               />
               <FormHelperText>Write a few words about your fundraising</FormHelperText>
             </FormControl>
+
             <FormControl isRequired>
               <FormLabel htmlFor='beneficiary'>
                 Beneficiary address
@@ -298,6 +314,7 @@ function App() {
               <FormHelperText>Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
                 address but please double check this</FormHelperText>
             </FormControl>
+
             <FormControl isRequired>
               <FormLabel htmlFor='endDate'>
                 Deadline / End date
@@ -318,33 +335,42 @@ function App() {
 
         {(donateFormData.charityId !=null ) &&
         <form onSubmit={donate}>
-          <legend>
-            Donate to charity modal -> id: {donateFormData.charityId}
-          </legend>
-          <label>
-            Choose the currency:
-            <select
-                id="donateCurrency"
-                name="donateCurrency"
-                value={donateFormData.donateCurrency}
-                onChange={handleChange(setDonateFormData)}
+          <fieldset>
+            <legend>
+              Donate to charity modal -> id: {donateFormData.charityId}
+            </legend>
 
-            >
-              <option value="0">ETH</option>
-              <option value="1">USDC</option>
-            </select>
-          </label>
-          <label htmlFor="contribution">
-            Choose goal:
-            <input
-                type="number"
-                name="contribution"
-                id="contribution"
-                value={donateFormData.contribution}
-                onChange={handleChange(setDonateFormData)}
-            ></input>
-          </label>
-          <button>+</button>
+            <FormControl isRequired>
+              <FormLabel htmlFor='donateCurrency'>Currency</FormLabel>
+              <Select
+                  id="donateCurrency"
+                  name="donateCurrency"
+                  value={donateFormData.donateCurrency}
+                  onChange={handleChange(setDonateFormData)}
+                  variant='outline'
+              >
+                <option value='0'>ETH</option>
+                <option value='1'>USDC</option>
+              </Select>
+              <FormHelperText>Choose the currency in which you would like to make donation for a goal</FormHelperText>
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel htmlFor='contribution'>Goal</FormLabel>
+              <NumberInput
+                  defaultValue={0}
+                  min={0}
+                  name="contribution"
+                  id="contribution"
+                  onChange={handleChangeChakraUiComponents(setDonateFormData, 'contribution')}
+              >
+                <NumberInputField/>
+              </NumberInput>
+              <FormHelperText>Choose the amount of currency that you would like to contribute</FormHelperText>
+            </FormControl>
+
+            <Button type="submit" color='red'>+</Button>
+          </fieldset>
         </form>
         }
         <div>
