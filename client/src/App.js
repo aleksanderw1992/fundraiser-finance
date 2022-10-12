@@ -10,21 +10,21 @@ import {
   FormHelperText,
   FormLabel,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   NumberInput,
   NumberInputField,
   Radio,
   RadioGroup,
   Select,
   Stack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useToast,
-  useDisclosure
+  useDisclosure,
+  useToast
 } from '@chakra-ui/react'
 
 function App() {
@@ -35,23 +35,25 @@ function App() {
         status: "ALL_CHARITIES"
       }
   );
+  const initialCreateFormDataState = {
+    currency: "0",
+    goal: 0,
+    description: "",
+    beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580",
+    endDate: 0
+
+  };
   const [createFormData, setCreateFormData] = React.useState(
-      {
-        currency: "0",
-        goal: 0,
-        description: "",
-        beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580",
-        endDate: 0
-
-      }
+      initialCreateFormDataState
   );
-  const [donateFormData, setDonateFormData] = React.useState(
-      {
-        donateCurrency: "0",
-        contribution: 0,
-        charityId: null
+  const initialDonateFormDataState = {
+    donateCurrency: "0",
+    contribution: 0,
+    charityId: null
 
-      }
+  };
+  const [donateFormData, setDonateFormData] = React.useState(
+      initialDonateFormDataState
   );
 
   const createCharityModal = useDisclosure()
@@ -163,17 +165,25 @@ function App() {
   below are form methods
   */
 
-  function resetDonateState() {
+  function resetDonateFormDataState() {
+    setDonateFormData({...initialDonateFormDataState});
+  }
+  function resetDonateFormDataStateLeaveCharityId() {
+    console.log('resetDonateFormDataStateLeaveCharityId'); // todo
     setDonateFormData(prevFormData => {
       return {
         ...prevFormData,
+        donateCurrency: "0",
         contribution: 0,
-        charityId: null
       }
     });
   }
 
-  function donate(event) {
+  function resetCreateFormDataState() {
+    setCreateFormData({...initialCreateFormDataState});
+  }
+
+  function handleDonate(event) {
     event.preventDefault();
     switch (donateFormData.donateCurrency) {
       case '0':
@@ -191,6 +201,7 @@ function App() {
       duration: 6000,
       isClosable: true,
     });
+    resetDonateFormDataStateLeaveCharityId();
   }
 
   function donateModalOpen(event, charityId) {
@@ -207,9 +218,16 @@ function App() {
   function tryCloseCharity(event, charityId) {
     event.preventDefault();
     mockTryCloseCharity(charityId);
+    toast({
+      title: 'Fundraising closed!',
+      description: `We've successfully closed charity with id ${charityId}!`,
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    });
   }
 
-  function mockHandleCreate(event) {
+  function handleCreate(event) {
     event.preventDefault();
     mockCreateCharity(createFormData.currency,
         createFormData.goal,
@@ -224,7 +242,8 @@ function App() {
           duration: 6000,
           isClosable: true,
         });
-    // console.log(' -- mockHandleCreate - after creation:');
+    resetCreateFormDataState();
+    // console.log(' -- handleCreate - after creation:');
     // console.log(charities);
   }
 
@@ -280,7 +299,7 @@ function App() {
           <Button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</Button>
           <fieldset>
             <legend>Filter charities</legend>
-            <RadioGroup onChange={(event) => resetDonateState() & handleChangeChakraUiComponents(setFilterFormData, 'status')(event) } value={filterFormData.status}>
+            <RadioGroup onChange={(event) => resetDonateFormDataState() & handleChangeChakraUiComponents(setFilterFormData, 'status')(event) } value={filterFormData.status}>
               <Stack>
                 <Radio value='ONGOING'>Show only ongoing charities</Radio>
                 <Radio value='CLOSED_GOAL_MET'>Finished successfully - ready to receive NFT!</Radio>
@@ -294,13 +313,13 @@ function App() {
         <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
 
 
-        <Modal isOpen={createCharityModal.isOpen} onClose={createCharityModal.onClose}>
+        <Modal isOpen={createCharityModal.isOpen} onClose={() => resetCreateFormDataState() & createCharityModal.onClose()}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create new charity</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <form onSubmit={mockHandleCreate} id="create-new-charity-form">
+            <form onSubmit={handleCreate} id="create-new-charity-form">
               <fieldset>
                 <legend>Create new charity</legend>
 
@@ -382,20 +401,20 @@ function App() {
 
           <ModalFooter>
             <Button colorScheme='blue' mr={3} type="submit" form="create-new-charity-form">Add</Button>
-            <Button variant='ghost' onClick={createCharityModal.onClose}>
+            <Button variant='ghost' onClick={() => resetCreateFormDataState() & createCharityModal.onClose()}>
               Close
             </Button>
           </ModalFooter>
         </ModalContent>
 
       </Modal>
-      <Modal isOpen={donateModal.isOpen} onClose={() => resetDonateState() & donateModal.onClose()}>
+      <Modal isOpen={donateModal.isOpen} onClose={() => resetDonateFormDataState() & donateModal.onClose()}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Donate</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <form onSubmit={donate} id="donate-form">
+            <form onSubmit={handleDonate} id="donate-form">
               <fieldset>
                 <legend>
                   Donate to charity with id {donateFormData.charityId}
@@ -436,7 +455,7 @@ function App() {
 
           <ModalFooter>
             <Button colorScheme='blue' mr={3} type="submit" form="donate-form">+</Button>
-            <Button variant='ghost' onClick={() => resetDonateState() & donateModal.onClose()}>
+            <Button variant='ghost' onClick={() => resetDonateFormDataState() & donateModal.onClose()}>
               Close
             </Button>
           </ModalFooter>
