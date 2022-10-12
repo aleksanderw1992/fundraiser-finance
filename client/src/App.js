@@ -23,6 +23,9 @@ import {
   RadioGroup,
   Select,
   Stack,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
   useDisclosure,
   useToast
 } from '@chakra-ui/react'
@@ -73,7 +76,6 @@ function App() {
 
   function handleChange(setFormData) {
     return function(event) {
-      console.log(event)
       const {name, value, type, checked} = event.target
       setFormData(prevFormData => {
         return {
@@ -172,9 +174,9 @@ function App() {
     console.log('resetDonateFormDataStateLeaveCharityId'); // todo
     setDonateFormData(prevFormData => {
       return {
-        ...prevFormData,
-        donateCurrency: "0",
+        charityId: prevFormData.charityId,
         contribution: 0,
+        donateCurrency: "0"
       }
     });
   }
@@ -313,7 +315,7 @@ function App() {
         <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
 
 
-        <Modal isOpen={createCharityModal.isOpen} onClose={() => resetCreateFormDataState() & createCharityModal.onClose()}>
+        <Modal size="xl" isOpen={createCharityModal.isOpen} onClose={() => resetCreateFormDataState() & createCharityModal.onClose()}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Create new charity</ModalHeader>
@@ -436,12 +438,13 @@ function App() {
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel htmlFor='contribution'>Goal</FormLabel>
+                  <FormLabel htmlFor='contribution'>Donation</FormLabel>
                   <NumberInput
                       defaultValue={0}
                       min={0}
                       name="contribution"
                       id="contribution"
+                      value={donateFormData.contribution}
                       onChange={handleChangeChakraUiComponents(setDonateFormData, 'contribution')}
                   >
                     <NumberInputField/>
@@ -454,7 +457,7 @@ function App() {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} type="submit" form="donate-form">+</Button>
+            <Button colorScheme='blue' mr={3} type="submit" form="donate-form" disabled={donateFormData.contribution === 0}>+</Button>
             <Button variant='ghost' onClick={() => resetDonateFormDataState() & donateModal.onClose()}>
               Close
             </Button>
