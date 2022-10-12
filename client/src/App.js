@@ -64,6 +64,10 @@ function App() {
     1:'CLOSED_GOAL_MET',
     2:'CLOSED_GOAL_NOT_MET'
   }
+  const enumCurrencyToString = {
+    0:'ETH',
+    1:'USDC',
+  }
 
   function handleChange(setFormData) {
     return function(event) {
@@ -180,7 +184,13 @@ function App() {
         break;
     }
     // close modal
-    resetDonateState();
+    toast({
+      title: 'Successful donation!',
+      description: `We've received donation for charity id ${donateFormData.charityId}. Donation: ${donateFormData.contribution} ${enumCurrencyToString[donateFormData.donateCurrency]}. You may close the window.`,
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    });
   }
 
   function donateModalOpen(event, charityId) {
@@ -191,6 +201,7 @@ function App() {
         charityId: charityId
       }
     })
+    donateModal.onOpen();
   }
 
   function tryCloseCharity(event, charityId) {
@@ -378,47 +389,60 @@ function App() {
         </ModalContent>
 
       </Modal>
+      <Modal isOpen={donateModal.isOpen} onClose={() => resetDonateState() & donateModal.onClose()}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Donate</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <form onSubmit={donate} id="donate-form">
+              <fieldset>
+                <legend>
+                  Donate to charity with id {donateFormData.charityId}
+                </legend>
 
-        {(donateFormData.charityId !=null ) &&
-        <form onSubmit={donate}>
-          <fieldset>
-            <legend>
-              Donate to charity modal -> id: {donateFormData.charityId}
-            </legend>
+                <FormControl isRequired>
+                  <FormLabel htmlFor='donateCurrency'>Currency</FormLabel>
+                  <Select
+                      id="donateCurrency"
+                      name="donateCurrency"
+                      value={donateFormData.donateCurrency}
+                      onChange={handleChange(setDonateFormData)}
+                      variant='outline'
+                  >
+                    <option value='0'>ETH</option>
+                    <option value='1'>USDC</option>
+                  </Select>
+                  <FormHelperText>Choose the currency in which you would like to make donation for a goal</FormHelperText>
+                </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel htmlFor='donateCurrency'>Currency</FormLabel>
-              <Select
-                  id="donateCurrency"
-                  name="donateCurrency"
-                  value={donateFormData.donateCurrency}
-                  onChange={handleChange(setDonateFormData)}
-                  variant='outline'
-              >
-                <option value='0'>ETH</option>
-                <option value='1'>USDC</option>
-              </Select>
-              <FormHelperText>Choose the currency in which you would like to make donation for a goal</FormHelperText>
-            </FormControl>
+                <FormControl isRequired>
+                  <FormLabel htmlFor='contribution'>Goal</FormLabel>
+                  <NumberInput
+                      defaultValue={0}
+                      min={0}
+                      name="contribution"
+                      id="contribution"
+                      onChange={handleChangeChakraUiComponents(setDonateFormData, 'contribution')}
+                  >
+                    <NumberInputField/>
+                  </NumberInput>
+                  <FormHelperText>Choose the amount of currency that you would like to contribute</FormHelperText>
+                </FormControl>
+              </fieldset>
+            </form>
 
-            <FormControl isRequired>
-              <FormLabel htmlFor='contribution'>Goal</FormLabel>
-              <NumberInput
-                  defaultValue={0}
-                  min={0}
-                  name="contribution"
-                  id="contribution"
-                  onChange={handleChangeChakraUiComponents(setDonateFormData, 'contribution')}
-              >
-                <NumberInputField/>
-              </NumberInput>
-              <FormHelperText>Choose the amount of currency that you would like to contribute</FormHelperText>
-            </FormControl>
+          </ModalBody>
 
-            <Button type="submit" color='red'>+</Button>
-          </fieldset>
-        </form>
-        }
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} type="submit" form="donate-form">+</Button>
+            <Button variant='ghost' onClick={() => resetDonateState() & donateModal.onClose()}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
         <div>
           {charities
           .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : enumCharityStatusToString[charity.status] === filterFormData.status)
