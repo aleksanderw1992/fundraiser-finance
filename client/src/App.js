@@ -15,7 +15,16 @@ import {
   Radio,
   RadioGroup,
   Select,
-  Stack
+  Stack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useToast,
+  useDisclosure
 } from '@chakra-ui/react'
 
 function App() {
@@ -44,6 +53,12 @@ function App() {
 
       }
   );
+
+  const createCharityModal = useDisclosure()
+  const donateModal = useDisclosure()
+  const toast = useToast()
+
+
   const enumCharityStatusToString = {
     0:'ONGOING',
     1:'CLOSED_GOAL_MET',
@@ -190,6 +205,14 @@ function App() {
         createFormData.endDate,
         createFormData.description,
         createFormData.beneficiary);
+
+    toast({
+          title: 'Charity created!',
+          description: `We've created a charity with id ${charities.length} and description ${createFormData.description}. You may close the window.`,
+          status: 'success',
+          duration: 6000,
+          isClosable: true,
+        });
     // console.log(' -- mockHandleCreate - after creation:');
     // console.log(charities);
   }
@@ -257,84 +280,104 @@ function App() {
           </fieldset>
         </form>
 
-        <form onSubmit={mockHandleCreate}>
-          <fieldset>
-            <legend>Create new charity</legend>
+        <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
 
-            <FormControl isRequired>
-              <FormLabel htmlFor='currency'>Currency</FormLabel>
-              <Select
-                  id="currency"
-                  name="currency"
-                  value={createFormData.currency}
-                  onChange={handleChange(setCreateFormData)}
-                  variant='outline'
-              >
-                <option value='0'>ETH</option>
-                <option value='1'>USDC</option>
-              </Select>
-              <FormHelperText>Choose the currency in which you would like the goal to be set!</FormHelperText>
-            </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel htmlFor='goal'>Goal</FormLabel>
-              <NumberInput
-                  defaultValue={0}
-                  min={0}
-                  name="goal"
-                  id="goal"
-                  onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
-              >
-                <NumberInputField/>
-              </NumberInput>
-              <FormHelperText>Choose the amount of currency that you need to raise</FormHelperText>
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel htmlFor='description'>Description</FormLabel>
-              <Input
-                  placeholder="Description ... "
-                  type="text"
-                  name="description"
-                  id="description"
-                  value={createFormData.description}
-                  onChange={handleChange(setCreateFormData)}
-              />
-              <FormHelperText>Write a few words about your fundraising</FormHelperText>
-            </FormControl>
+        <Modal isOpen={createCharityModal.isOpen} onClose={createCharityModal.onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Create new charity</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <form onSubmit={mockHandleCreate} id="create-new-charity-form">
+              <fieldset>
+                <legend>Create new charity</legend>
 
-            <FormControl isRequired>
-              <FormLabel htmlFor='beneficiary'>
-                Beneficiary address
-              </FormLabel>
-              <Input
-                  placeholder="Eg. 0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
-                  type="text"
-                  name="beneficiary"
-                  id="beneficiary"
-                  value={createFormData.beneficiary}
-                  onChange={handleChange(setCreateFormData)}
-              />
-              <FormHelperText>Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
-                address but please double check this</FormHelperText>
-            </FormControl>
+                <FormControl isRequired>
+                  <FormLabel htmlFor='currency'>Currency</FormLabel>
+                  <Select
+                      id="currency"
+                      name="currency"
+                      value={createFormData.currency}
+                      onChange={handleChange(setCreateFormData)}
+                      variant='outline'
+                  >
+                    <option value='0'>ETH</option>
+                    <option value='1'>USDC</option>
+                  </Select>
+                  <FormHelperText>Choose the currency in which you would like the goal to be set!</FormHelperText>
+                </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel htmlFor='endDate'>
-                Deadline / End date
-              </FormLabel>
-              <Input
-                  placeholder="Eg. 2022-10-23T18:58"
-                  type="datetime-local"
-                  name="endDate"
-                  id="endDate"
-                  value={createFormData.endDate}
-                  onChange={handleChange(setCreateFormData)}
-              />
-              <FormHelperText>When fundraising is going to end?</FormHelperText>
-            </FormControl>
-            <Button type="submit" color='red' >+</Button>
-          </fieldset>
-        </form>
+                <FormControl isRequired>
+                  <FormLabel htmlFor='goal'>Goal</FormLabel>
+                  <NumberInput
+                      defaultValue={0}
+                      min={0}
+                      name="goal"
+                      id="goal"
+                      onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
+                  >
+                    <NumberInputField/>
+                  </NumberInput>
+                  <FormHelperText>Choose the amount of currency that you need to raise</FormHelperText>
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel htmlFor='description'>Description</FormLabel>
+                  <Input
+                      placeholder="Description ... "
+                      type="text"
+                      name="description"
+                      id="description"
+                      value={createFormData.description}
+                      onChange={handleChange(setCreateFormData)}
+                  />
+                  <FormHelperText>Write a few words about your fundraising</FormHelperText>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel htmlFor='beneficiary'>
+                    Beneficiary address
+                  </FormLabel>
+                  <Input
+                      placeholder="Eg. 0x8fCfcCa3377757dB1b11B417D2375D13ce37F580"
+                      type="text"
+                      name="beneficiary"
+                      id="beneficiary"
+                      value={createFormData.beneficiary}
+                      onChange={handleChange(setCreateFormData)}
+                  />
+                  <FormHelperText>Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default it should be your
+                    address but please double check this</FormHelperText>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel htmlFor='endDate'>
+                    Deadline / End date
+                  </FormLabel>
+                  <Input
+                      placeholder="Eg. 2022-10-23T18:58"
+                      type="datetime-local"
+                      name="endDate"
+                      id="endDate"
+                      value={createFormData.endDate}
+                      onChange={handleChange(setCreateFormData)}
+                  />
+                  <FormHelperText>When fundraising is going to end?</FormHelperText>
+                </FormControl>
+              </fieldset>
+            </form>
+
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} type="submit" form="create-new-charity-form">Add</Button>
+            <Button variant='ghost' onClick={createCharityModal.onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+
+      </Modal>
 
         {(donateFormData.charityId !=null ) &&
         <form onSubmit={donate}>
