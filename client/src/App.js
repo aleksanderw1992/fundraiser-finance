@@ -97,10 +97,6 @@ function App() {
     }
   }
 
-  function handleSelectChange(e) {
-    console.log(e);
-  }
-
   function precondition(expression, message) {
     if (!expression) {
       throw message;
@@ -155,8 +151,8 @@ function App() {
     console.log(result);
   };
 
-  function handleCreate() {
-    console.log('handleCreate');
+  function handleCreateContract() {
+    console.log('handleCreateContract');
     loadCharites(contracts.charityFactoryContract);
     createCharity(contracts.charityFactoryContract);
     loadCharites(contracts.charityFactoryContract);
@@ -244,8 +240,6 @@ function App() {
           isClosable: true,
         });
     resetCreateFormDataState();
-    // console.log(' -- handleCreate - after creation:');
-    // console.log(charities);
   }
 
 
