@@ -40,7 +40,7 @@ function App() {
   );
   const initialCreateFormDataState = {
     currency: "0",
-    goal: 0,
+    goal: 1,
     description: "",
     beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580",
     endDate: 0
@@ -51,7 +51,7 @@ function App() {
   );
   const initialDonateFormDataState = {
     donateCurrency: "0",
-    contribution: 0,
+    contribution: 0.0001,
     charityId: null
 
   };
@@ -171,11 +171,10 @@ function App() {
     setDonateFormData({...initialDonateFormDataState});
   }
   function resetDonateFormDataStateLeaveCharityId() {
-    console.log('resetDonateFormDataStateLeaveCharityId'); // todo
     setDonateFormData(prevFormData => {
       return {
         charityId: prevFormData.charityId,
-        contribution: 0,
+        contribution: 0.0001,
         donateCurrency: "0"
       }
     });
@@ -343,14 +342,20 @@ function App() {
                 <FormControl isRequired>
                   <FormLabel htmlFor='goal'>Goal</FormLabel>
                   <NumberInput
-                      defaultValue={0}
-                      min={0}
+                      precision={5}
+                      step={0.2}
+                      defaultValue={0.0001}
+                      min={0.0001}
                       name="goal"
                       id="goal"
                       value={createFormData.goal}
                       onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
                   >
                     <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper/>
+                      <NumberDecrementStepper/>
+                    </NumberInputStepper>
                   </NumberInput>
                   <FormHelperText>Choose the amount of currency that you need to raise</FormHelperText>
                 </FormControl>
@@ -441,14 +446,20 @@ function App() {
                 <FormControl isRequired>
                   <FormLabel htmlFor='contribution'>Donation</FormLabel>
                   <NumberInput
-                      defaultValue={0}
-                      min={0}
+                      precision={5}
+                      step={0.2}
+                      defaultValue={0.0001}
+                      min={0.0001}
                       name="contribution"
                       id="contribution"
                       value={donateFormData.contribution}
                       onChange={handleChangeChakraUiComponents(setDonateFormData, 'contribution')}
                   >
                     <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper/>
+                      <NumberDecrementStepper/>
+                    </NumberInputStepper>
                   </NumberInput>
                   <FormHelperText>Choose the amount of currency that you would like to contribute</FormHelperText>
                 </FormControl>
