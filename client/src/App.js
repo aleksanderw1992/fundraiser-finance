@@ -347,6 +347,7 @@ function App() {
                       min={0}
                       name="goal"
                       id="goal"
+                      value={createFormData.goal}
                       onChange={handleChangeChakraUiComponents(setCreateFormData, 'goal')}
                   >
                     <NumberInputField/>
