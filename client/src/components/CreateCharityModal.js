@@ -5,17 +5,40 @@ import {Select} from "@chakra-ui/select";
 import {NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper} from "@chakra-ui/number-input";
 import {Input} from "@chakra-ui/input";
 import {Button} from "@chakra-ui/button";
+import {ui} from "../constants";
 
 function CreateCharityModal(props) {
+  const [createFormData, setCreateFormData] = React.useState(
+      ui.initialCreateFormDataState
+  );
+  function resetCreateFormDataState() {
+    setCreateFormData({...ui.initialCreateFormDataState});
+  }
+  function handleCreate(event) {
+    event.preventDefault();
+    props.mockCreateCharity(createFormData.currency,
+        createFormData.goal,
+        createFormData.endDate,
+        createFormData.description,
+        createFormData.beneficiary);
 
+    props.toast({
+      title: 'Charity created!',
+      description: `We've created a charity - ${createFormData.description}. You may close the window.`,
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    });
+    resetCreateFormDataState();
+  }
   return (
-      <Modal size="xl" isOpen={props.createCharityModal.isOpen} onClose={() => props.resetCreateFormDataState() & props.createCharityModal.onClose()}>
+      <Modal size="xl" isOpen={props.createCharityModal.isOpen} onClose={() => resetCreateFormDataState() & props.createCharityModal.onClose()}>
         <ModalOverlay/>
         <ModalContent>
           <ModalHeader>Create new charity</ModalHeader>
           <ModalCloseButton/>
           <ModalBody>
-            <form onSubmit={props.handleCreate} id="create-new-charity-form">
+            <form onSubmit={handleCreate} id="create-new-charity-form">
               <fieldset>
                 <legend>Create new charity</legend>
 
@@ -24,8 +47,8 @@ function CreateCharityModal(props) {
                   <Select
                       id="currency"
                       name="currency"
-                      value={props.createFormData.currency}
-                      onChange={props.handleChange(props.setCreateFormData)}
+                      value={createFormData.currency}
+                      onChange={props.handleChange(setCreateFormData)}
                       variant='outline'
                   >
                     <option value='0'>ETH</option>
@@ -43,8 +66,8 @@ function CreateCharityModal(props) {
                       min={0.0001}
                       name="goal"
                       id="goal"
-                      value={props.createFormData.goal}
-                      onChange={props.handleChangeChakraUiComponents(props.setCreateFormData, 'goal')}
+                      value={createFormData.goal}
+                      onChange={props.handleChangeChakraUiComponents(setCreateFormData, 'goal')}
                   >
                     <NumberInputField/>
                     <NumberInputStepper>
@@ -61,8 +84,8 @@ function CreateCharityModal(props) {
                       type="text"
                       name="description"
                       id="description"
-                      value={props.createFormData.description}
-                      onChange={props.handleChange(props.setCreateFormData)}
+                      value={createFormData.description}
+                      onChange={props.handleChange(setCreateFormData)}
                   />
                   <FormHelperText>Write a few words about your fundraising</FormHelperText>
                 </FormControl>
@@ -76,8 +99,8 @@ function CreateCharityModal(props) {
                       type="text"
                       name="beneficiary"
                       id="beneficiary"
-                      value={props.createFormData.beneficiary}
-                      onChange={props.handleChange(props.setCreateFormData)}
+                      value={createFormData.beneficiary}
+                      onChange={props.handleChange(setCreateFormData)}
                   />
                   <FormHelperText>Write an address of beneficiary. Beneficiary will be eligible to receive all funds after the goal is met. By default
                     it should be your
@@ -93,8 +116,8 @@ function CreateCharityModal(props) {
                       type="datetime-local"
                       name="endDate"
                       id="endDate"
-                      value={props.createFormData.endDate}
-                      onChange={props.handleChange(props.setCreateFormData)}
+                      value={createFormData.endDate}
+                      onChange={props.handleChange(setCreateFormData)}
                   />
                   <FormHelperText>When fundraising is going to end?</FormHelperText>
                 </FormControl>
@@ -105,7 +128,7 @@ function CreateCharityModal(props) {
 
           <ModalFooter>
             <Button colorScheme='blue' mr={3} type="submit" form="create-new-charity-form">Add</Button>
-            <Button variant='ghost' onClick={() => props.resetCreateFormDataState() & props.createCharityModal.onClose()}>
+            <Button variant='ghost' onClick={() => resetCreateFormDataState() & props.createCharityModal.onClose()}>
               Close
             </Button>
           </ModalFooter>

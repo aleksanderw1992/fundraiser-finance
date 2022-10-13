@@ -19,10 +19,6 @@ function App() {
       ui.initialFilterFormData
   );
 
-  const [createFormData, setCreateFormData] = React.useState(
-      ui.initialCreateFormDataState
-  );
-
   const [donateFormData, setDonateFormData] = React.useState(
       ui.initialDonateFormDataState
   );
@@ -134,9 +130,6 @@ function App() {
     });
   }
 
-  function resetCreateFormDataState() {
-    setCreateFormData({...ui.initialCreateFormDataState});
-  }
 
   function handleDonate(event) {
     event.preventDefault();
@@ -204,24 +197,6 @@ function App() {
     });
   }
 
-  function handleCreate(event) {
-    event.preventDefault();
-    mockCreateCharity(createFormData.currency,
-        createFormData.goal,
-        createFormData.endDate,
-        createFormData.description,
-        createFormData.beneficiary);
-
-    toast({
-          title: 'Charity created!',
-          description: `We've created a charity with id ${charities.length} and description ${createFormData.description}. You may close the window.`,
-          status: 'success',
-          duration: 6000,
-          isClosable: true,
-        });
-    resetCreateFormDataState();
-  }
-
 
   /*
   below are mock functions that should be replaced by calling contract with etherjs
@@ -276,18 +251,16 @@ function App() {
               handleChangeChakraUiComponents={handleChangeChakraUiComponents}
               setFilterFormData={setFilterFormData}
               filterFormData={filterFormData}
-            />
-        <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
+          />
+          <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
         </Box>
 
         <CreateCharityModal
             createCharityModal={createCharityModal}
-            resetCreateFormDataState={resetCreateFormDataState}
-            handleCreate={handleCreate}
-            createFormData={createFormData}
-            handleChangeChakraUiComponents={handleChangeChakraUiComponents}
+            mockCreateCharity={mockCreateCharity}
             handleChange={handleChange}
-            setCreateFormData={setCreateFormData}
+            handleChangeChakraUiComponents={handleChangeChakraUiComponents}
+            toast={toast}
         />
         <DonateModal
             donateModal={donateModal}
@@ -300,7 +273,8 @@ function App() {
         />
         <Flex flexWrap="wrap">
           {charities
-          .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : ui.enumCharityStatusToString[charity.status] === filterFormData.status)
+          .filter(
+              (charity) => filterFormData.status === 'ALL_CHARITIES' ? true : ui.enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
               <CharityTyle
                   charity={charity}
