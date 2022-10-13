@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function X() {
+function DonateModal() {
 
 
 
@@ -8,3 +8,5 @@ function X() {
 
   );
 }
+
+export default DonateModal;
