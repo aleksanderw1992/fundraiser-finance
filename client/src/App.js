@@ -23,10 +23,7 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Radio,
-  RadioGroup,
   Select,
-  Stack,
   Tooltip,
   Flex,
   useDisclosure,
@@ -35,6 +32,7 @@ import {
 import {Box, VStack} from "@chakra-ui/layout"
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
+import FilterCharityForm from './components/FilterCharityForm'
 
 function App() {
   TimeAgo.addLocale(en)
@@ -297,21 +295,12 @@ function App() {
       <VStack w='100%'>
         {/*todo - delete after development*/}
         <Box spacing='10px'>
-        <form>
-          <Button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</Button>
-          <fieldset>
-            <legend>Filter charities</legend>
-            <RadioGroup onChange={(event) => resetDonateFormDataState() & handleChangeChakraUiComponents(setFilterFormData, 'status')(event) } value={filterFormData.status}>
-              <Stack direction={['column', 'row']}>
-                <Radio value='ONGOING'>Show only ongoing charities</Radio>
-                <Radio value='CLOSED_GOAL_MET'>Finished successfully - ready to receive NFT!</Radio>
-                <Radio value='CLOSED_GOAL_NOT_MET'>Finished without success - ready to withdraw funds</Radio>
-                <Radio value='ALL_CHARITIES'>Show me all charities</Radio>
-              </Stack>
-            </RadioGroup>
-          </fieldset>
-        </form>
-
+          <FilterCharityForm
+              charities={charities}
+              handleChangeChakraUiComponents={handleChangeChakraUiComponents}
+              setFilterFormData={setFilterFormData}
+              filterFormData={filterFormData}
+            />
         <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
         </Box>
 
@@ -483,7 +472,7 @@ function App() {
           .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : ui.enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
               <Box
-                  width="220px"
+                  width="250px"
                   height="360px"
                   borderWidth='1px'
                   borderRadius='lg'
