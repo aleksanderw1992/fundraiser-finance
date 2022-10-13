@@ -3,17 +3,16 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, ui, usdcAbi, usdcAddress} from "./constants";
 import React from 'react';
 
-import {Badge, Button, Flex, Image, Tooltip, useDisclosure, useToast} from '@chakra-ui/react'
+import {Button, Flex, useDisclosure, useToast} from '@chakra-ui/react'
 import {Box, VStack} from "@chakra-ui/layout"
-import TimeAgo from 'javascript-time-ago'
-import en from 'javascript-time-ago/locale/en'
+
 import FilterCharityForm from './components/FilterCharityForm'
 import CreateCharityModal from './components/CreateCharityModal'
 import DonateModal from './components/DonateModal'
+import CharityTyle from './components/CharityTyle'
 
 function App() {
-  TimeAgo.addLocale(en)
-  const timeAgo = new TimeAgo('en-US')
+
   const [charities, setCharities] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [filterFormData, setFilterFormData] = React.useState(
@@ -303,88 +302,15 @@ function App() {
           {charities
           .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : ui.enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
-              <Box
-                  width="250px"
-                  height="360px"
-                  borderWidth='1px'
-                  borderRadius='lg'
-                  overflow='hidden'
+              <CharityTyle
+                  charity={charity}
+                  donateModalOpen={donateModalOpen}
+                  tryCloseCharity={tryCloseCharity}
+                  receiveNft={receiveNft}
+                  withdraw={withdraw}
                   id={charity.id}
                   key={charity.id}
-              >
-                <Image
-                    src={`/img/fundraising_icon_${(charity.id % 8) + 1}.jpeg`}
-                    alt='image visualizing fundraising'
-                    height='125px'
-                    width='220px'
-                />
-                <Box p='6'>
-                  <Box display='flex' alignItems='baseline'>
-                    <Tooltip label={ui.enumStatusToUi[charity.status].tooltip}>
-                      <Badge borderRadius='full' px='2' colorScheme={ui.enumStatusToUi[charity.status].color}>
-                        {ui.enumStatusToUi[charity.status].text}
-                      </Badge>
-                    </Tooltip>
-                  </Box>
-          <Box
-            color='gray.500'
-            fontWeight='semibold'
-            letterSpacing='wide'
-            fontSize='xs'
-            textTransform='uppercase'
-            ml='2'
-          >
-            {charity.ethRaised} ETH &bull; {charity.usdcRaised} USDC
-          </Box>
-          <Box
-            color='gray.500'
-            fontWeight='bold'
-            letterSpacing='wide'
-            fontSize='xs'
-            textTransform='uppercase'
-            ml='2'
-          >
-            {charity.goal} {ui.enumCurrencyToString[charity.currency]} needed
-          </Box>
-        <Box
-          mt='1'
-          fontWeight='semibold'
-          as='h4'
-          lineHeight='tight'
-          noOfLines={1}
-        >
-          {charity.status === 0? 'Ending:' : 'Finished:'} {timeAgo.format(new Date(charity.endPeriod))}
-        </Box>
-                    <Tooltip label={charity.description}>
-                      <Box noOfLines={1}>
-                          {charity.description}
-                      </Box>
-                    </Tooltip>
-                    {
-                      charity.status === 0 &&
-                      <Box>
-                        <Box>
-                          <Button onClick={(event) => donateModalOpen(event, charity.id)}>Donate</Button>
-                        </Box>
-                        <Box>
-                          <Button onClick={(event) => tryCloseCharity(event, charity.id)}>Attempt closing</Button>
-                        </Box>
-                      </Box>
-                    }
-                    {
-                      charity.status === 1 &&
-                      <Box>
-                        <Button onClick={(event) => receiveNft(event, charity.id)}>Receive Nft</Button>
-                      </Box>
-                    }
-                    {
-                      charity.status === 2 &&
-                      <Box>
-                        <Button onClick={(event) => withdraw(event, charity.id)}>Withdraw</Button>
-                      </Box>
-                    }
-                </Box>
-              </Box>
+              />
           )}
         </Flex>
       </VStack>
