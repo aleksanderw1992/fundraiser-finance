@@ -7,6 +7,8 @@ const badgeAbi = require("./abi/badgeAbi.json");
 const usdcAddress = require("./address/usdcAddress.json");
 const usdcAbi = require("./abi/usdcAbi.json");
 
+const ui = require("./uiConstants.json");
+
 module.exports = {
   charityFactoryAddress,
   charityFactoryAbi,
@@ -14,4 +16,5 @@ module.exports = {
   badgeAbi,
   usdcAddress,
   usdcAbi,
+  ui
 };

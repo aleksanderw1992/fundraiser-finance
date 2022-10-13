@@ -1,6 +1,6 @@
 import './App.css';
 import {ethers} from 'ethers'
-import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,} from "./constants";
+import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAbi, usdcAddress,ui} from "./constants";
 import React from 'react';
 
 import {
@@ -42,66 +42,21 @@ function App() {
   const [charities, setCharities] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [filterFormData, setFilterFormData] = React.useState(
-      {
-        status: "ALL_CHARITIES"
-      }
+      ui.initialFilterFormData
   );
-  const initialCreateFormDataState = {
-    currency: "0",
-    goal: 1,
-    description: "",
-    beneficiary: "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580",
-    endDate: 0
 
-  };
   const [createFormData, setCreateFormData] = React.useState(
-      initialCreateFormDataState
+      ui.initialCreateFormDataState
   );
-  const initialDonateFormDataState = {
-    donateCurrency: "0",
-    contribution: 0.0001,
-    charityId: null
 
-  };
   const [donateFormData, setDonateFormData] = React.useState(
-      initialDonateFormDataState
+      ui.initialDonateFormDataState
   );
 
   const createCharityModal = useDisclosure()
   const donateModal = useDisclosure()
   const toast = useToast()
 
-
-  const enumCharityStatusToString = {
-    0:'ONGOING',
-    1:'CLOSED_GOAL_MET',
-    2:'CLOSED_GOAL_NOT_MET'
-  }
-  const enumCurrencyToString = {
-    0:'ETH',
-    1:'USDC',
-  }
-
-  const enumStatusToUi = {
-    0: {
-      image: 'ongoing',
-      tooltip: 'You can still donate to this fundraising',
-      color: 'blue',
-      text: 'ongoing'
-    },
-    1: {
-      image: 'goal_met',
-      tooltip: 'This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive participation NFT',
-      color: 'teal',
-      text: 'finished'
-    },
-    2: {
-      image: 'goal_not_met',
-      tooltip: 'This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive withdraw your funds',
-      color: 'brown',
-      text: 'finished'
-    }
-  }
 
   function handleChange(setFormData) {
     return function(event) {
@@ -193,7 +148,7 @@ function App() {
   */
 
   function resetDonateFormDataState() {
-    setDonateFormData({...initialDonateFormDataState});
+    setDonateFormData({...ui.initialDonateFormDataState});
   }
   function resetDonateFormDataStateLeaveCharityId() {
     setDonateFormData(prevFormData => {
@@ -206,7 +161,7 @@ function App() {
   }
 
   function resetCreateFormDataState() {
-    setCreateFormData({...initialCreateFormDataState});
+    setCreateFormData({...ui.initialCreateFormDataState});
   }
 
   function handleDonate(event) {
@@ -222,7 +177,7 @@ function App() {
     // close modal
     toast({
       title: 'Successful donation!',
-      description: `We've received donation for charity id ${donateFormData.charityId}. Donation: ${donateFormData.contribution} ${enumCurrencyToString[donateFormData.donateCurrency]}. You may close the window.`,
+      description: `We've received donation for charity id ${donateFormData.charityId}. Donation: ${donateFormData.contribution} ${ui.enumCurrencyToString[donateFormData.donateCurrency]}. You may close the window.`,
       status: 'success',
       duration: 6000,
       isClosable: true,
@@ -525,7 +480,7 @@ function App() {
 
         <Flex flexWrap="wrap">
           {charities
-          .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : enumCharityStatusToString[charity.status] === filterFormData.status)
+          .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : ui.enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
               <Box
                   width="220px"
@@ -544,9 +499,9 @@ function App() {
                 />
                 <Box p='6'>
                   <Box display='flex' alignItems='baseline'>
-                    <Tooltip label={enumStatusToUi[charity.status].tooltip}>
-                      <Badge borderRadius='full' px='2' colorScheme={enumStatusToUi[charity.status].color}>
-                        {enumStatusToUi[charity.status].text}
+                    <Tooltip label={ui.enumStatusToUi[charity.status].tooltip}>
+                      <Badge borderRadius='full' px='2' colorScheme={ui.enumStatusToUi[charity.status].color}>
+                        {ui.enumStatusToUi[charity.status].text}
                       </Badge>
                     </Tooltip>
                   </Box>
@@ -558,7 +513,17 @@ function App() {
             textTransform='uppercase'
             ml='2'
           >
-            {charity.ethRaised} ETH &bull; {charity.usdcRaised} USDC &bull;&bull; {charity.goal} {enumCurrencyToString[charity.currency]} needed
+            {charity.ethRaised} ETH &bull; {charity.usdcRaised} USDC
+          </Box>
+          <Box
+            color='gray.500'
+            fontWeight='bold'
+            letterSpacing='wide'
+            fontSize='xs'
+            textTransform='uppercase'
+            ml='2'
+          >
+            {charity.goal} {ui.enumCurrencyToString[charity.currency]} needed
           </Box>
         <Box
           mt='1'

@@ -1,0 +1,46 @@
+{
+  "initialCreateFormDataState": {
+    "currency": "0",
+    "goal": 1,
+    "description": "",
+    "beneficiary": "0x8fCfcCa3377757dB1b11B417D2375D13ce37F580",
+    "endDate": 0
+  },
+  "initialDonateFormDataState": {
+    "donateCurrency": "0",
+    "contribution": 0.0001,
+    "charityId": null
+  },
+  "initialFilterFormData" : {
+    "status": "ALL_CHARITIES"
+  },
+  "enumCharityStatusToString": {
+    "0": "ONGOING",
+    "1": "CLOSED_GOAL_MET",
+    "2": "CLOSED_GOAL_NOT_MET"
+  },
+  "enumCurrencyToString": {
+    "0": "ETH",
+    "1": "USDC"
+  },
+  "enumStatusToUi": {
+    "0": {
+      "image": "ongoing",
+      "tooltip": "You can still donate to this fundraising",
+      "color": "blue",
+      "text": "ongoing"
+    },
+    "1": {
+      "image": "goal_met",
+      "tooltip": "This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive participation NFT",
+      "color": "teal",
+      "text": "finished"
+    },
+    "2": {
+      "image": "goal_not_met",
+      "tooltip": "This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive withdraw your funds",
+      "color": "brown",
+      "text": "finished"
+    }
+  }
+}
