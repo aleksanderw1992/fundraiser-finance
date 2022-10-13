@@ -15,7 +15,7 @@ function CreateCharityModal(props) {
           <ModalHeader>Create new charity</ModalHeader>
           <ModalCloseButton/>
           <ModalBody>
-            <form onSubmit={handleCreate} id="create-new-charity-form">
+            <form onSubmit={props.handleCreate} id="create-new-charity-form">
               <fieldset>
                 <legend>Create new charity</legend>
 
@@ -43,7 +43,7 @@ function CreateCharityModal(props) {
                       min={0.0001}
                       name="goal"
                       id="goal"
-                      value={createFormData.goal}
+                      value={props.createFormData.goal}
                       onChange={props.handleChangeChakraUiComponents(props.setCreateFormData, 'goal')}
                   >
                     <NumberInputField/>
@@ -94,7 +94,7 @@ function CreateCharityModal(props) {
                       name="endDate"
                       id="endDate"
                       value={props.createFormData.endDate}
-                      onChange={props.handleChange(setCreateFormData)}
+                      onChange={props.handleChange(props.setCreateFormData)}
                   />
                   <FormHelperText>When fundraising is going to end?</FormHelperText>
                 </FormControl>

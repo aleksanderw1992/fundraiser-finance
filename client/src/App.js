@@ -3,36 +3,13 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, ui, usdcAbi, usdcAddress} from "./constants";
 import React from 'react';
 
-import {
-  Badge,
-  Button,
-  Flex,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  Image,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Select,
-  Tooltip,
-  useDisclosure,
-  useToast
-} from '@chakra-ui/react'
+import {Badge, Button, Flex, Image, Tooltip, useDisclosure, useToast} from '@chakra-ui/react'
 import {Box, VStack} from "@chakra-ui/layout"
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
 import FilterCharityForm from './components/FilterCharityForm'
 import CreateCharityModal from './components/CreateCharityModal'
+import DonateModal from './components/DonateModal'
 
 function App() {
   TimeAgo.addLocale(en)
@@ -311,68 +288,17 @@ function App() {
             createFormData={createFormData}
             handleChangeChakraUiComponents={handleChangeChakraUiComponents}
             handleChange={handleChange}
+            setCreateFormData={setCreateFormData}
         />
-      <Modal isOpen={donateModal.isOpen} onClose={() => resetDonateFormDataState() & donateModal.onClose()}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Donate</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <form onSubmit={handleDonate} id="donate-form">
-              <fieldset>
-                <legend>
-                  Donate to charity with id {donateFormData.charityId}
-                </legend>
-
-                <FormControl isRequired>
-                  <FormLabel htmlFor='donateCurrency'>Currency</FormLabel>
-                  <Select
-                      id="donateCurrency"
-                      name="donateCurrency"
-                      value={donateFormData.donateCurrency}
-                      onChange={handleChange(setDonateFormData)}
-                      variant='outline'
-                  >
-                    <option value='0'>ETH</option>
-                    <option value='1'>USDC</option>
-                  </Select>
-                  <FormHelperText>Choose the currency in which you would like to make donation for a goal</FormHelperText>
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel htmlFor='contribution'>Donation</FormLabel>
-                  <NumberInput
-                      precision={5}
-                      step={0.2}
-                      defaultValue={0.0001}
-                      min={0.0001}
-                      name="contribution"
-                      id="contribution"
-                      value={donateFormData.contribution}
-                      onChange={handleChangeChakraUiComponents(setDonateFormData, 'contribution')}
-                  >
-                    <NumberInputField/>
-                    <NumberInputStepper>
-                      <NumberIncrementStepper/>
-                      <NumberDecrementStepper/>
-                    </NumberInputStepper>
-                  </NumberInput>
-                  <FormHelperText>Choose the amount of currency that you would like to contribute</FormHelperText>
-                </FormControl>
-              </fieldset>
-            </form>
-
-          </ModalBody>
-
-          <ModalFooter>
-            <Button colorScheme='blue' mr={3} type="submit" form="donate-form" disabled={donateFormData.contribution === 0}>+</Button>
-            <Button variant='ghost' onClick={() => resetDonateFormDataState() & donateModal.onClose()}>
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
+        <DonateModal
+            donateModal={donateModal}
+            resetDonateFormDataState={resetDonateFormDataState}
+            handleDonate={handleDonate}
+            donateFormData={donateFormData}
+            handleChange={handleChange}
+            handleChangeChakraUiComponents={handleChangeChakraUiComponents}
+            setDonateFormData={setDonateFormData}
+        />
         <Flex flexWrap="wrap">
           {charities
           .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : ui.enumCharityStatusToString[charity.status] === filterFormData.status)
