@@ -523,12 +523,13 @@ function App() {
         </ModalContent>
       </Modal>
 
-        <Flex>
+        <Flex flexWrap="wrap">
           {charities
           .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
               <Box
-                  maxW='sm'
+                  width="220px"
+                  height="360px"
                   borderWidth='1px'
                   borderRadius='lg'
                   overflow='hidden'
@@ -568,9 +569,11 @@ function App() {
         >
           {charity.status === 0? 'Ending:' : 'Finished:'} {timeAgo.format(new Date(charity.endPeriod))}
         </Box>
-                  <Box>
-                    {charity.description}
-                  </Box>
+                    <Tooltip label={charity.description}>
+                      <Box noOfLines={1}>
+                          {charity.description}
+                      </Box>
+                    </Tooltip>
                     {
                       charity.status === 0 &&
                       <Box>
