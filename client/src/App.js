@@ -4,11 +4,12 @@ import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, usdcAb
 import React from 'react';
 
 import {
+  Badge,
   Button,
-  Container,
   FormControl,
   FormHelperText,
   FormLabel,
+  Image,
   Input,
   Modal,
   ModalBody,
@@ -17,20 +18,27 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
+  NumberInputStepper,
   Radio,
   RadioGroup,
   Select,
   Stack,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
+  Tooltip,
+  Flex,
   useDisclosure,
   useToast
 } from '@chakra-ui/react'
+import {Box, VStack} from "@chakra-ui/layout"
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en'
 
 function App() {
+  TimeAgo.addLocale(en)
+  const timeAgo = new TimeAgo('en-US')
   const [charities, setCharities] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [filterFormData, setFilterFormData] = React.useState(
@@ -72,6 +80,27 @@ function App() {
   const enumCurrencyToString = {
     0:'ETH',
     1:'USDC',
+  }
+
+  const enumStatusToUi = {
+    0: {
+      image: 'ongoing',
+      tooltip: 'You can still donate to this fundraising',
+      color: 'blue',
+      text: 'ongoing'
+    },
+    1: {
+      image: 'goal_met',
+      tooltip: 'This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive participation NFT',
+      color: 'teal',
+      text: 'finished'
+    },
+    2: {
+      image: 'goal_not_met',
+      tooltip: 'This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive withdraw your funds',
+      color: 'brown',
+      text: 'finished'
+    }
   }
 
   function handleChange(setFormData) {
@@ -224,6 +253,28 @@ function App() {
     });
   }
 
+  function withdraw(event, charityId) {
+    event.preventDefault();// todo
+    toast({
+      title: 'Fundraising closed!',
+      description: `We've successfully withdrew funds for charity with id ${charityId}!`,
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    });
+  }
+
+  function receiveNft(event, charityId) {
+    event.preventDefault(); // todo
+    toast({
+      title: 'Fundraising closed!',
+      description: `We've successfully received nft for charity with id ${charityId}!`,
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    });
+  }
+
   function handleCreate(event) {
     event.preventDefault();
     mockCreateCharity(createFormData.currency,
@@ -288,14 +339,15 @@ function App() {
   }
 
   return (
-      <Container>
+      <VStack w='100%'>
         {/*todo - delete after development*/}
+        <Box spacing='10px'>
         <form>
           <Button type="button" onClick={() => console.log(charities)}>Print current charities state (only for debugging</Button>
           <fieldset>
             <legend>Filter charities</legend>
             <RadioGroup onChange={(event) => resetDonateFormDataState() & handleChangeChakraUiComponents(setFilterFormData, 'status')(event) } value={filterFormData.status}>
-              <Stack>
+              <Stack direction={['column', 'row']}>
                 <Radio value='ONGOING'>Show only ongoing charities</Radio>
                 <Radio value='CLOSED_GOAL_MET'>Finished successfully - ready to receive NFT!</Radio>
                 <Radio value='CLOSED_GOAL_NOT_MET'>Finished without success - ready to withdraw funds</Radio>
@@ -306,7 +358,7 @@ function App() {
         </form>
 
         <Button type="submit" color='red' onClick={createCharityModal.onOpen}>+</Button>
-
+        </Box>
 
         <Modal size="xl" isOpen={createCharityModal.isOpen} onClose={() => resetCreateFormDataState() & createCharityModal.onClose()}>
         <ModalOverlay />
@@ -471,25 +523,82 @@ function App() {
         </ModalContent>
       </Modal>
 
-        <div>
+        <Flex>
           {charities
           .filter((charity) => filterFormData.status === 'ALL_CHARITIES' ? true : enumCharityStatusToString[charity.status] === filterFormData.status)
           .map((charity) =>
-              <div id={charity.id} key={charity.id}>
-                id:{charity.id} |
-                currency:{charity.currency} |
-                goal:{charity.goal} |
-                desc:{charity.description} |
-                end:{charity.endPeriod} |
-                status:{charity.status} |
-                usdcRaised:{charity.usdcRaised} |
-                ethRaised:{charity.ethRaised} |
-                <Button onClick={(event) => donateModalOpen(event, charity.id)}>Donate</Button>
-                <Button onClick={(event) => tryCloseCharity(event, charity.id)}>Attempt closing</Button>
-              </div>
+              <Box
+                  maxW='sm'
+                  borderWidth='1px'
+                  borderRadius='lg'
+                  overflow='hidden'
+                  id={charity.id}
+                  key={charity.id}
+              >
+                <Image
+                    src={`/img/fundraising_icon_${(charity.id % 8) + 1}.jpeg`}
+                    alt='image visualizing fundraising'
+                    height='125px'
+                    width='220px'
+                />
+                <Box p='6'>
+                  <Box display='flex' alignItems='baseline'>
+                    <Tooltip label={enumStatusToUi[charity.status].tooltip}>
+                      <Badge borderRadius='full' px='2' colorScheme={enumStatusToUi[charity.status].color}>
+                        {enumStatusToUi[charity.status].text}
+                      </Badge>
+                    </Tooltip>
+                  </Box>
+          <Box
+            color='gray.500'
+            fontWeight='semibold'
+            letterSpacing='wide'
+            fontSize='xs'
+            textTransform='uppercase'
+            ml='2'
+          >
+            {charity.ethRaised} ETH &bull; {charity.usdcRaised} USDC &bull;&bull; {charity.goal} {enumCurrencyToString[charity.currency]} needed
+          </Box>
+        <Box
+          mt='1'
+          fontWeight='semibold'
+          as='h4'
+          lineHeight='tight'
+          noOfLines={1}
+        >
+          {charity.status === 0? 'Ending:' : 'Finished:'} {timeAgo.format(new Date(charity.endPeriod))}
+        </Box>
+                  <Box>
+                    {charity.description}
+                  </Box>
+                    {
+                      charity.status === 0 &&
+                      <Box>
+                        <Box>
+                          <Button onClick={(event) => donateModalOpen(event, charity.id)}>Donate</Button>
+                        </Box>
+                        <Box>
+                          <Button onClick={(event) => tryCloseCharity(event, charity.id)}>Attempt closing</Button>
+                        </Box>
+                      </Box>
+                    }
+                    {
+                      charity.status === 1 &&
+                      <Box>
+                        <Button onClick={(event) => receiveNft(event, charity.id)}>Receive Nft</Button>
+                      </Box>
+                    }
+                    {
+                      charity.status === 2 &&
+                      <Box>
+                        <Button onClick={(event) => withdraw(event, charity.id)}>Withdraw</Button>
+                      </Box>
+                    }
+                </Box>
+              </Box>
           )}
-        </div>
-      </Container>
+        </Flex>
+      </VStack>
   );
 }
 
