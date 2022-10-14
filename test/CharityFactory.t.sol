@@ -301,16 +301,16 @@ contract CharityFactoryTest is Test {
         vm.stopPrank();
     }
     
-    function testGetCharities() public {
+    function testGetAllCharities() public {
         vm.deal(contributorAddress, 100 ether);
         
-        assertEq(contractUnderTests.getCharities().length, 0);
+        assertEq(contractUnderTests.getAllCharities().length, 0);
         uint256 firstCharityId = createDefaultCharityTenEthGoal();
-        assertEq(contractUnderTests.getCharities().length, 1);
+        assertEq(contractUnderTests.getAllCharities().length, 1);
         uint256 secondCharityId = createAndCloseCharityGoalMet();
-        assertEq(contractUnderTests.getCharities().length, 2);
+        assertEq(contractUnderTests.getAllCharities().length, 2);
         uint256 thirdCharityId = createAndCloseCharityGoalNotMet();
-        assertEq(contractUnderTests.getCharities().length, 3);
+        assertEq(contractUnderTests.getAllCharities().length, 3);
     
         (,,,,,,CharityFactory.CharityStatus firstCharityStatus,,) = contractUnderTests.charities(firstCharityId);
         assertTrue(firstCharityStatus == CharityFactory.CharityStatus.ONGOING);
