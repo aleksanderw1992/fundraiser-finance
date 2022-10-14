@@ -26,11 +26,12 @@ contract Badge is ERC721 {
     Counters.Counter private _counter;
     
     constructor(address _charityFactoryAddress) ERC721("FundraiserFinanceParticipationBadge", "FFPB") {
+        require(_charityFactoryAddress != address(0x0), "Charity Factory address cannot be zero");
         charityFactoryAddress = _charityFactoryAddress;
     }
 
     ///@notice function to mint contribution nft. Only CharityFactory contract can issue nft
-    function mint(address contributor, uint256 charityId, uint256 ethRaised, uint256 usdcRaised) public {
+    function mint(address contributor, uint256 charityId, uint256 ethRaised, uint256 usdcRaised) external {
         require(msg.sender == address(charityFactoryAddress), "Only charity factory contract can mint Badge NFT");
         _counter.increment();
         _safeMint(contributor, _counter.current());

@@ -60,6 +60,9 @@ contract CharityFactory {
     
     ///@notice passing usdc address for testing purpose
     constructor(address _usdcAddress, address _aggregatorAddress) {
+        require(_usdcAddress != address(0x0), "Usdc address cannot be zero");
+        require(_aggregatorAddress != address(0x0), "Chainlink address cannot be zero");
+
         USDC_ADDRESS = IERC20(_usdcAddress);
         priceFeed = AggregatorV3Interface(_aggregatorAddress);
 
@@ -127,8 +130,11 @@ contract CharityFactory {
 
         charity.usdcRaised += amount;
 
-        USDC_ADDRESS.approve(address(this),  amount);
-        USDC_ADDRESS.transferFrom(msg.sender, address(this), amount);
+        bool successUsdcApproval = USDC_ADDRESS.approve(address(this),  amount);
+        require(successUsdcApproval, "Failed to approve usdc transfer");
+        bool successUsdcTransfer = USDC_ADDRESS.transferFrom(msg.sender, address(this), amount);
+        require(successUsdcTransfer, "Failed to transfer usdc");
+
         
         UserDonation memory currentDonation = donations[msg.sender][charityId];
         // solidity does not support null structs
@@ -148,21 +154,22 @@ contract CharityFactory {
         Charity memory charity = charities[charityId];
         require(charity.status == CharityStatus.CLOSED_GOAL_NOT_MET,
             "The withdrawal of contribution is possible only for closed charities with goal not being met");
-        UserDonation storage currentDonation = donations[msg.sender][charityId];
-        
-        // withdraw usdc
-//        USDC_ADDRESS.approve(msg.sender, currentDonation.usdcRaised); //?
-        USDC_ADDRESS.transferFrom(address(this), msg.sender, currentDonation.usdcRaised);
-        
-        // withdraw eth
-        (bool success,) = payable(msg.sender).call{value: currentDonation.ethRaised}("");
-        require(success, "Failed to transfer eth");
-    
+        UserDonation memory currentDonation = donations[msg.sender][charityId];
         
         donations[msg.sender][charityId] = UserDonation({
                 ethRaised: 0,
                 usdcRaised: 0
             });
+        
+        // withdraw usdc
+//        USDC_ADDRESS.approve(msg.sender, currentDonation.usdcRaised); //?
+        bool successUsdcTransfer = USDC_ADDRESS.transferFrom(address(this), msg.sender, currentDonation.usdcRaised);
+        require(successUsdcTransfer, "Failed to transfer usdc");
+
+        // withdraw eth
+        (bool successEthTransfer,) = payable(msg.sender).call{value: currentDonation.ethRaised}("");
+        require(successEthTransfer, "Failed to transfer eth");
+    
         emit WithdrawContribution(msg.sender, charityId, currentDonation.ethRaised, currentDonation.usdcRaised);
     }
     
@@ -189,11 +196,13 @@ contract CharityFactory {
             // transfer to beneficiary
             // usdc
 //            USDC_ADDRESS.approve(address(this),  currentDonation.usdcRaised); // ?
-            USDC_ADDRESS.transferFrom(address(this), charity.beneficiary, charity.usdcRaised);
+            bool successUsdcTransfer = USDC_ADDRESS.transferFrom(address(this), charity.beneficiary, charity.usdcRaised);
+            require(successUsdcTransfer, "Failed to transfer usdc");
+
     
             // eth
-            (bool success,) = payable(charity.beneficiary).call{value: charity.ethRaised}("");
-            require(success, "Failed to transfet eth");
+            (bool successEthTransfer,) = payable(charity.beneficiary).call{value: charity.ethRaised}("");
+            require(successEthTransfer, "Failed to transfet eth");
         } else {
             charity.status = CharityStatus.CLOSED_GOAL_NOT_MET;
         }
@@ -206,13 +215,13 @@ contract CharityFactory {
         require(!nftAlreadyReceived[msg.sender][charityId], "Nft already received for user");
         UserDonation memory userDonation = donations[msg.sender][charityId];
         require(userDonation.ethRaised >0 || userDonation.usdcRaised > 0, "User did not donate to charity");
-        badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
         nftAlreadyReceived[msg.sender][charityId] = true;
         // solidity does not support null structs
         donations[msg.sender][charityId] = UserDonation({
                 ethRaised: 0,
                 usdcRaised: 0
             });
+        badge.mint(msg.sender, charityId, userDonation.ethRaised, userDonation.usdcRaised);
         emit ReceiveNtf(msg.sender, charityId);
     }
 

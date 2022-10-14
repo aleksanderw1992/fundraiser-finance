@@ -10,15 +10,15 @@ import "chainlink/contracts/src/v0.8/tests/MockV3Aggregator.sol";
 contract CharityFactoryTest is Test {
     CharityFactory contractUnderTests;
     Badge badge;
-    uint256 ETH_MIN_PRICE = 0.01 ether;
-    uint256 ETH_NOT_SUFFICIENT_PRICE = 0.009 ether;
+    uint256 constant ETH_MIN_PRICE = 0.01 ether;
+    uint256 constant ETH_NOT_SUFFICIENT_PRICE = 0.009 ether;
+    uint256 constant CREATION_TIMESTAMP = 10e6;
+    uint256 constant CHARITY_DEFAULT_END_TIMESTAMP = CREATION_TIMESTAMP + 1000;
     address deployer = address(0x1223);
     address anotherAddress = address(0x18893);
     address contributorAddress = address(0x188931);
     address beneficiary = address(0x1889311);
     MockERC20 musdc = new MockERC20();
-    uint256 creationTimestamp = 1000000;
-    uint256 charityDefaultEndTimestamp = creationTimestamp + 1000;
     // 1 eth = 2000 USDC
     MockV3Aggregator mockChainlinkAggregator = new MockV3Aggregator(8, 2000*(10**8));
     
@@ -29,14 +29,14 @@ contract CharityFactoryTest is Test {
         contractUnderTests = new CharityFactory(address(musdc), address(mockChainlinkAggregator));
         badge = contractUnderTests.badge();
         vm.stopPrank();
-        vm.warp(creationTimestamp);
+        vm.warp(CREATION_TIMESTAMP);
     }
 
     // goal is either 10 ETH (0.01 already raised) or 20 000 USDC (20 USDC already raised)
     function createDefaultCharityTenEthGoal() public returns(uint256) {
-        vm.warp(creationTimestamp);
+        vm.warp(CREATION_TIMESTAMP);
         return contractUnderTests.createCharity{value : ETH_MIN_PRICE}
-        (CharityFactory.Currency.ETH, 10, charityDefaultEndTimestamp, "successful fundraising", beneficiary);
+        (CharityFactory.Currency.ETH, 10, CHARITY_DEFAULT_END_TIMESTAMP, "successful fundraising", beneficiary);
     }
     
     function testCreateCharitySuccess() public {
@@ -46,37 +46,37 @@ contract CharityFactoryTest is Test {
     function testCreateCharityFailTooLessEthFee() public {
         vm.expectRevert("You need to pay at least 0.01 ETH for a charity to start");
         contractUnderTests.createCharity{value : ETH_NOT_SUFFICIENT_PRICE}
-        (CharityFactory.Currency.ETH, 10, charityDefaultEndTimestamp, "successful fundraising", beneficiary);
+        (CharityFactory.Currency.ETH, 10, CHARITY_DEFAULT_END_TIMESTAMP, "successful fundraising", beneficiary);
     }
     
     function testCreateCharityFailBeneficiaryZeroAddress() public {
         vm.expectRevert("Beneficiary cannot be set to address zero");
         contractUnderTests.createCharity{value : ETH_MIN_PRICE}
-        (CharityFactory.Currency.ETH, 10, charityDefaultEndTimestamp, "successful fundraising", address(0x0));
+        (CharityFactory.Currency.ETH, 10, CHARITY_DEFAULT_END_TIMESTAMP, "successful fundraising", address(0x0));
     }
     
     function testCreateCharityFailGoalZero() public {
         vm.expectRevert("Goal cannot be zero");
         contractUnderTests.createCharity{value : ETH_MIN_PRICE}
-        (CharityFactory.Currency.ETH, 0, charityDefaultEndTimestamp, "successful fundraising", beneficiary);
+        (CharityFactory.Currency.ETH, 0, CHARITY_DEFAULT_END_TIMESTAMP, "successful fundraising", beneficiary);
     }
     
     function testCreateCharityFailEndDateInPast() public {
         vm.expectRevert("Charity cannot end in the past");
         contractUnderTests.createCharity{value : ETH_MIN_PRICE}
-        (CharityFactory.Currency.ETH, 10, creationTimestamp - 1000, "successful fundraising", beneficiary);
+        (CharityFactory.Currency.ETH, 10, CREATION_TIMESTAMP - 1000, "successful fundraising", beneficiary);
     }
     
     function testCreateCharityFailGoalTooLowInUsdc() public {
         vm.expectRevert("Cannot create a charity with too low goal");
         contractUnderTests.createCharity{value : ETH_MIN_PRICE}
-        (CharityFactory.Currency.USDC, 1, charityDefaultEndTimestamp, "successful fundraising", beneficiary);
+        (CharityFactory.Currency.USDC, 1, CHARITY_DEFAULT_END_TIMESTAMP, "successful fundraising", beneficiary);
     }
     
     function testCannotDonateAfterTimePass() public {
         vm.startPrank(contributorAddress);
         uint256 charityId = createDefaultCharityTenEthGoal();
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
         vm.expectRevert("Cannot donate to closed charity");
         contractUnderTests.donateEth{value: 10 ether}(charityId);
         vm.stopPrank();
@@ -87,7 +87,7 @@ contract CharityFactoryTest is Test {
         vm.startPrank(contributorAddress);
         charityId = createDefaultCharityTenEthGoal();
         contractUnderTests.donateEth{value: 10 ether}(charityId);
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
         contractUnderTests.tryCloseCharity(charityId);
         vm.stopPrank();
     }
@@ -96,7 +96,7 @@ contract CharityFactoryTest is Test {
         vm.startPrank(contributorAddress);
         charityId = createDefaultCharityTenEthGoal();
         contractUnderTests.donateEth{value: 1 ether}(charityId);
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
         contractUnderTests.tryCloseCharity(charityId);
         vm.stopPrank();
     }
@@ -164,7 +164,7 @@ contract CharityFactoryTest is Test {
         vm.startPrank(contributorAddress);
         uint256 charityId = createDefaultCharityTenEthGoal();
         contractUnderTests.donateEth{value: 10 ether}(charityId);
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
         
         assertEq(contributorAddress.balance, 0.01 ether);
         assertEq(musdc.balanceOf(contributorAddress), 20000);
@@ -184,7 +184,7 @@ contract CharityFactoryTest is Test {
         uint256 charityId = createDefaultCharityTenEthGoal();
         musdc.approve(address(contractUnderTests), 20000);
         contractUnderTests.donateUsdc(charityId, 20000);
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
 
         assertEq(contributorAddress.balance, 10.01 ether);
         assertEq(musdc.balanceOf(contributorAddress), 0);
@@ -206,7 +206,7 @@ contract CharityFactoryTest is Test {
         contractUnderTests.donateEth{value: 5 ether}(charityId);
         musdc.approve(address(contractUnderTests), 200);
         contractUnderTests.donateUsdc(charityId, 200);
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
 
         assertEq(contributorAddress.balance, 5.01 ether);
         assertEq(musdc.balanceOf(contributorAddress), 19800);
@@ -290,7 +290,7 @@ contract CharityFactoryTest is Test {
         contractUnderTests.donateEth{value: 10 ether}(charityId);
         musdc.approve(address(contractUnderTests), 200);
         contractUnderTests.donateUsdc(charityId, 200);
-        vm.warp(charityDefaultEndTimestamp);
+        vm.warp(CHARITY_DEFAULT_END_TIMESTAMP);
     
         assertEq(beneficiary.balance, 0);
         assertEq(musdc.balanceOf(beneficiary), 0);
