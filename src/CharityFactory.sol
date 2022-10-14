@@ -34,6 +34,21 @@ contract CharityFactory {
         uint256 ethRaised;
         uint256 usdcRaised;
     }
+
+    struct CharityDonationView {
+        uint256 id;
+        Currency currency;
+        uint256 goal;
+        uint256 endPeriod;
+        string description;
+        address beneficiary;
+        CharityStatus status;
+        uint256 ethRaised;
+        uint256 usdcRaised;
+        uint256 ethDonatedByCurrentUser;
+        uint256 usdcDonatedByCurrentUser;
+    }
+    
     
     ///@notice events emitted after each action
     event Contribute(address indexed contributor, uint256 indexed charityId, Currency currency, uint256 amount);
@@ -225,8 +240,29 @@ contract CharityFactory {
         emit ReceiveNtf(msg.sender, charityId);
     }
 
-    function getCharities() public view returns(Charity[] memory) {
+    function getAllCharities() external view returns(Charity[] memory) {
         return charities;
+    }
+
+    function getCharitiesDonationsView(address user) external view returns(CharityDonationView[] memory) {
+        CharityDonationView[] memory result = new CharityDonationView[](charities.length);
+        for(uint256 i =0; i<charities.length; i++) {
+            Charity memory current = charities[i];
+            result[i] = CharityDonationView({
+                id: current.id,
+                currency: current.currency,
+                goal: current.goal,
+                endPeriod: current.endPeriod,
+                description: current.description,
+                beneficiary: current.beneficiary,
+                status: current.status,
+                ethRaised: current.ethRaised,
+                usdcRaised: current.usdcRaised,
+                ethDonatedByCurrentUser: donations[user][current.id].ethRaised,
+                usdcDonatedByCurrentUser: donations[user][current.id].usdcRaised
+            });
+        }
+        return result;
     }
     
     ///@notice Get latest price of ETH in USDC. Note - assuming 1 USD = 1 USDC which might not always be the case

@@ -284,7 +284,7 @@
   },
   {
     "inputs": [],
-    "name": "getCharities",
+    "name": "getAllCharities",
     "outputs": [
       {
         "components": [
@@ -335,6 +335,82 @@
           }
         ],
         "internalType": "struct CharityFactory.Charity[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getCharitiesDonationsView",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum CharityFactory.Currency",
+            "name": "currency",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "goal",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "beneficiary",
+            "type": "address"
+          },
+          {
+            "internalType": "enum CharityFactory.CharityStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ethRaised",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "usdcRaised",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ethDonatedByCurrentUser",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "usdcDonatedByCurrentUser",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CharityFactory.CharityDonationView[]",
         "name": "",
         "type": "tuple[]"
       }
