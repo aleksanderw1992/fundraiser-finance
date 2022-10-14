@@ -3,15 +3,69 @@ import {Image} from "@chakra-ui/image";
 import {Badge, Box} from "@chakra-ui/layout";
 import {Tooltip} from "@chakra-ui/tooltip";
 import {ui} from "../constants";
-import {Button} from "@chakra-ui/button";
+import {Button,useDisclosure} from "@chakra-ui/react";
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
+import DonateModal from "./DonateModal";
 
 
 function CharityTyle(props) {
   TimeAgo.addLocale(en)
   const timeAgo = new TimeAgo('en-US')
-  
+  const donateModal = useDisclosure()
+
+  const [donateFormData, setDonateFormData] = React.useState(
+      ui.initialDonateFormDataState
+  );
+
+
+  function handleDonate(event) {
+    event.preventDefault();
+    switch (donateFormData.donateCurrency) {
+      case '0':
+        props.mockDonateEth(donateFormData.charityId,donateFormData.contribution);
+        break;
+      case '1':
+        props.mockDonateUsdc(donateFormData.charityId,donateFormData.contribution);
+        break;
+    }
+    // close modal
+    props.toast({
+      title: 'Successful donation!',
+      description: `We've received donation for charity id ${donateFormData.charityId}. Donation: ${donateFormData.contribution} ${ui.enumCurrencyToString[donateFormData.donateCurrency]}. You may close the window.`,
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    });
+    resetDonateFormDataStateLeaveCharityId();
+  }
+
+
+
+  function donateModalOpen(event, charityId) {
+    event.preventDefault();
+    setDonateFormData(prevFormData => {
+      return {
+        ...prevFormData,
+        charityId: charityId
+      }
+    })
+    donateModal.onOpen();
+  }
+
+  function resetDonateFormDataState() {
+    setDonateFormData({...ui.initialDonateFormDataState});
+  }
+
+  function resetDonateFormDataStateLeaveCharityId() {
+    setDonateFormData(prevFormData => {
+      return {
+        charityId: prevFormData.charityId,
+        contribution: 0.0001,
+        donateCurrency: "0"
+      }
+    });
+  }
   return (
       <Box
           width="250px"
@@ -21,6 +75,15 @@ function CharityTyle(props) {
           overflow='hidden'
 
       >
+        <DonateModal
+            donateModal={donateModal}
+            resetDonateFormDataState={resetDonateFormDataState}
+            handleDonate={handleDonate}
+            donateFormData={donateFormData}
+            handleChange={props.handleChange}
+            handleChangeChakraUiComponents={props.handleChangeChakraUiComponents}
+            setDonateFormData={setDonateFormData}
+        />
         <Image
             src={`/img/fundraising_icon_${(props.charity.id % 8) + 1}.jpeg`}
             alt='image visualizing fundraising'
@@ -73,7 +136,7 @@ function CharityTyle(props) {
             props.charity.status === 0 &&
             <Box>
               <Box>
-                <Button onClick={(event) => props.donateModalOpen(event, props.charity.id)}>Donate</Button>
+                <Button onClick={(event) => donateModalOpen(event, props.charity.id)}>Donate</Button>
               </Box>
               <Box>
                 <Button onClick={(event) => props.tryCloseCharity(event, props.charity.id)}>Attempt closing</Button>

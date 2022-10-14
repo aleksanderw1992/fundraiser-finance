@@ -8,7 +8,6 @@ import {Box, VStack} from "@chakra-ui/layout"
 
 import FilterCharityForm from './components/FilterCharityForm'
 import CreateCharityModal from './components/CreateCharityModal'
-import DonateModal from './components/DonateModal'
 import CharityTyle from './components/CharityTyle'
 
 function App() {
@@ -19,12 +18,7 @@ function App() {
       ui.initialFilterFormData
   );
 
-  const [donateFormData, setDonateFormData] = React.useState(
-      ui.initialDonateFormDataState
-  );
-
   const createCharityModal = useDisclosure()
-  const donateModal = useDisclosure()
   const toast = useToast()
 
 
@@ -117,51 +111,7 @@ function App() {
   below are form methods
   */
 
-  function resetDonateFormDataState() {
-    setDonateFormData({...ui.initialDonateFormDataState});
-  }
-  function resetDonateFormDataStateLeaveCharityId() {
-    setDonateFormData(prevFormData => {
-      return {
-        charityId: prevFormData.charityId,
-        contribution: 0.0001,
-        donateCurrency: "0"
-      }
-    });
-  }
 
-
-  function handleDonate(event) {
-    event.preventDefault();
-    switch (donateFormData.donateCurrency) {
-      case '0':
-        mockDonateEth(donateFormData.charityId,donateFormData.contribution);
-        break;
-      case '1':
-        mockDonateUsdc(donateFormData.charityId,donateFormData.contribution);
-        break;
-    }
-    // close modal
-    toast({
-      title: 'Successful donation!',
-      description: `We've received donation for charity id ${donateFormData.charityId}. Donation: ${donateFormData.contribution} ${ui.enumCurrencyToString[donateFormData.donateCurrency]}. You may close the window.`,
-      status: 'success',
-      duration: 6000,
-      isClosable: true,
-    });
-    resetDonateFormDataStateLeaveCharityId();
-  }
-
-  function donateModalOpen(event, charityId) {
-    event.preventDefault();
-    setDonateFormData(prevFormData => {
-      return {
-        ...prevFormData,
-        charityId: charityId
-      }
-    })
-    donateModal.onOpen();
-  }
 
   function tryCloseCharity(event, charityId) {
     event.preventDefault();
@@ -174,6 +124,11 @@ function App() {
       isClosable: true,
     });
   }
+
+
+  /*
+  below are mock functions that should be replaced by calling contract with etherjs
+  */
 
   function withdraw(event, charityId) {
     event.preventDefault();// todo
@@ -197,10 +152,6 @@ function App() {
     });
   }
 
-
-  /*
-  below are mock functions that should be replaced by calling contract with etherjs
-  */
 
   function mockCreateCharity(currency, goal, endPeriod, description, beneficiary) {
     setCharities(prev => [...prev, {
@@ -262,15 +213,7 @@ function App() {
             handleChangeChakraUiComponents={handleChangeChakraUiComponents}
             toast={toast}
         />
-        <DonateModal
-            donateModal={donateModal}
-            resetDonateFormDataState={resetDonateFormDataState}
-            handleDonate={handleDonate}
-            donateFormData={donateFormData}
-            handleChange={handleChange}
-            handleChangeChakraUiComponents={handleChangeChakraUiComponents}
-            setDonateFormData={setDonateFormData}
-        />
+
         <Flex flexWrap="wrap">
           {charities
           .filter(
@@ -278,10 +221,14 @@ function App() {
           .map((charity) =>
               <CharityTyle
                   charity={charity}
-                  donateModalOpen={donateModalOpen}
                   tryCloseCharity={tryCloseCharity}
                   receiveNft={receiveNft}
                   withdraw={withdraw}
+                  mockDonateEth={mockDonateEth}
+                  mockDonateUsdc={mockDonateUsdc}
+                  toast={toast}
+                  handleChange={handleChange}
+                  handleChangeChakraUiComponents={handleChangeChakraUiComponents}
                   id={charity.id}
                   key={charity.id}
               />
