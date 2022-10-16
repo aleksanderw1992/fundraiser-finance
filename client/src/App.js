@@ -52,6 +52,12 @@ function App() {
   }
 
   React.useEffect(() => {
+
+    // web3Connect();
+
+  }, []);
+
+  function web3Connect() {
     const chainId = "31337";
     precondition(!!charityFactoryAddress[chainId] &&
         !!badgeAddress[chainId] &&
@@ -80,8 +86,7 @@ function App() {
       badgeContract: badgeContract,
       usdcContract: usdcContract
     });
-
-  }, []);
+  }
 
   const loadCharites = async (charityFactoryContract) => {
 
