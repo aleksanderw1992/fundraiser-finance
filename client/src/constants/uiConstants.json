@@ -39,7 +39,7 @@
     "2": {
       "image": "goal_not_met",
       "tooltip": "This fundraising is finished. You cannot donate anymore. In case you already have donated you can receive withdraw your funds",
-      "color": "brown",
+      "color": "yellow",
       "text": "finished"
     }
   }

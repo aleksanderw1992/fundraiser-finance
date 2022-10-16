@@ -113,9 +113,9 @@ function App() {
 
 
 
-  function tryCloseCharity(event, charityId) {
+  function tryCloseCharity(event, charityId, goalMet) {
     event.preventDefault();
-    mockTryCloseCharity(charityId);
+    mockTryCloseCharity(charityId, goalMet);
     toast({
       title: 'Fundraising closed!',
       description: `We've successfully closed charity with id ${charityId}!`,
@@ -163,7 +163,9 @@ function App() {
       beneficiary:beneficiary,
       status:0,
       ethRaised:0,
-      usdcRaised:0
+      usdcRaised:0,
+      ethDonatedByCurrentUser:0,
+      usdcDonatedByCurrentUser:0
     }]);
     // console.log(' -- mockCreateCharity - after creation:');
     // console.log(charities);
@@ -186,9 +188,9 @@ function App() {
     });
   }
 
-  function mockTryCloseCharity(charityId) {
+  function mockTryCloseCharity(charityId, goalMet) {
     setCharities(prev => {
-      prev.filter(charity => charity.id == charityId).forEach(charity => charity.status = 1); // CLOSED_GOAL_MET
+      prev.filter(charity => charity.id == charityId).forEach(charity => charity.status = goalMet?1:2); // CLOSED_GOAL_MET
       return [...prev]; // change reference of returned array to force re-rendering
     });
   }

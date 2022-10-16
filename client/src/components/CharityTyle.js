@@ -139,7 +139,10 @@ function CharityTyle(props) {
                 <Button onClick={(event) => donateModalOpen(event, props.charity.id)}>Donate</Button>
               </Box>
               <Box>
-                <Button onClick={(event) => props.tryCloseCharity(event, props.charity.id)}>Attempt closing</Button>
+                <Button onClick={(event) => props.tryCloseCharity(event, props.charity.id, true)}>Attempt closing goal met</Button>
+              </Box>
+              <Box>
+                <Button onClick={(event) => props.tryCloseCharity(event, props.charity.id, false)}>Attempt closing goal not met</Button>
               </Box>
             </Box>
           }
