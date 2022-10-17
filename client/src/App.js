@@ -3,8 +3,7 @@ import {ethers} from 'ethers'
 import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, ui, usdcAbi, usdcAddress} from "./constants";
 import React from 'react';
 
-import {Button, Flex, useDisclosure, useToast} from '@chakra-ui/react'
-import {Box, VStack} from "@chakra-ui/layout"
+import {Button, Flex, useDisclosure, useToast, Box, VStack} from '@chakra-ui/react'
 
 import FilterCharityForm from './components/FilterCharityForm'
 import CreateCharityModal from './components/CreateCharityModal'
