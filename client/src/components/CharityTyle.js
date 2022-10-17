@@ -1,13 +1,9 @@
 import React from 'react';
-import {Image} from "@chakra-ui/image";
-import {Badge, Box} from "@chakra-ui/layout";
-import {Tooltip} from "@chakra-ui/tooltip";
+import {Badge, Box, Button, Image, Tooltip, useDisclosure} from "@chakra-ui/react";
 import {ui} from "../constants";
-import {Button,useDisclosure} from "@chakra-ui/react";
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
 import DonateModal from "./DonateModal";
-
 
 function CharityTyle(props) {
   TimeAgo.addLocale(en)

@@ -1,10 +1,24 @@
 import React from 'react';
-import {Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay} from "@chakra-ui/modal";
-import {FormControl, FormHelperText, FormLabel} from "@chakra-ui/form-control";
-import {Select} from "@chakra-ui/select";
-import {NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper} from "@chakra-ui/number-input";
-import {Input} from "@chakra-ui/input";
-import {Button} from "@chakra-ui/button";
+import {
+  Button,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Select
+} from "@chakra-ui/react";
 import {ui} from "../constants";
 
 function CreateCharityModal(props) {

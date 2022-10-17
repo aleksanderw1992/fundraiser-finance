@@ -1,7 +1,5 @@
 import React from 'react';
-import {Button} from "@chakra-ui/button";
-import {Radio, RadioGroup} from "@chakra-ui/radio";
-import {Stack} from "@chakra-ui/layout";
+import {Radio, RadioGroup, Button, Stack} from "@chakra-ui/react";
 
 function FilterCharityForm(props) {
 
