@@ -47,6 +47,7 @@ contract CharityFactory {
         uint256 usdcRaised;
         uint256 ethDonatedByCurrentUser;
         uint256 usdcDonatedByCurrentUser;
+        bool nftReceived;
     }
     
     
@@ -259,7 +260,8 @@ contract CharityFactory {
                 ethRaised: current.ethRaised,
                 usdcRaised: current.usdcRaised,
                 ethDonatedByCurrentUser: donations[user][current.id].ethRaised,
-                usdcDonatedByCurrentUser: donations[user][current.id].usdcRaised
+                usdcDonatedByCurrentUser: donations[user][current.id].usdcRaised,
+                nftReceived: nftAlreadyReceived[user][current.id]
             });
         }
         return result;

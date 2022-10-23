@@ -408,6 +408,11 @@
             "internalType": "uint256",
             "name": "usdcDonatedByCurrentUser",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "nftReceived",
+            "type": "bool"
           }
         ],
         "internalType": "struct CharityFactory.CharityDonationView[]",
