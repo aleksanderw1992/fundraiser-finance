@@ -5,11 +5,23 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ChakraProvider } from '@chakra-ui/react'
 
+
+import { Web3Modal } from '@web3modal/react'
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const config = {
+  projectId: '74bb1410a399ebe240a21cb74c16167d',
+  theme: 'dark',
+  accentColor: 'default',
+  ethereum: {
+    appName: 'fundraiser-finance'
+  }
+}
 root.render(
   <React.StrictMode>
     <ChakraProvider>
     <App />
+      <Web3Modal config={config} />
     </ChakraProvider>
   </React.StrictMode>
 );
