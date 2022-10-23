@@ -7,6 +7,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 
 
 import { Web3Modal } from '@web3modal/react'
+import {chains} from '@web3modal/ethereum';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const config = {
@@ -14,9 +15,15 @@ const config = {
   theme: 'dark',
   accentColor: 'default',
   ethereum: {
-    appName: 'fundraiser-finance'
+    appName: 'fundraiser-finance',
+    autoConnect: true,
+    chains: [
+      chains.localhost,
+      chains.goerli,
+      chains.polygon
+    ],
   }
-}
+};
 root.render(
   <React.StrictMode>
     <ChakraProvider>

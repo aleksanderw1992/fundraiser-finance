@@ -4,7 +4,7 @@ import {badgeAbi, badgeAddress, charityFactoryAbi, charityFactoryAddress, ui, us
 import React from 'react';
 
 import {Button, Flex, useDisclosure, useToast, Box, VStack} from '@chakra-ui/react'
-import { ConnectButton, useConnectModal } from '@web3modal/react'
+import { ConnectButton } from '@web3modal/react'
 
 import FilterCharityForm from './components/FilterCharityForm'
 import CreateCharityModal from './components/CreateCharityModal'
@@ -20,7 +20,6 @@ function App() {
 
   const createCharityModal = useDisclosure()
   const toast = useToast()
-  const { isOpen, open, close } = useConnectModal()
 
 
   function handleChange(setFormData) {
