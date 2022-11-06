@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Box, useRadioGroup, useRadio, HStack, Icon} from "@chakra-ui/react";
+import {Button, Box, useRadioGroup, useRadio, HStack, Icon} from "@chakra-ui/react";
 import {MdOutlineFilterList} from 'react-icons/md';
 
 function RadioCard(props) {
@@ -43,7 +43,7 @@ function FilterCharityForm(props) {
     ]
     const {getRootProps, getRadioProps} = useRadioGroup({
         name: 'status',
-        defaultValue: 'react',
+        defaultValue: 'ALL_CHARITIES',
         onChange: (event) => props.handleChangeChakraUiComponents(props.setFilterFormData, 'status')(event),
     })
     const group = getRootProps()
@@ -53,7 +53,8 @@ function FilterCharityForm(props) {
                 debugging</Button>
             <fieldset>
                 <legend>
-                   <Icon as={MdOutlineFilterList} /> Filter charities</legend>
+                    <Icon as={MdOutlineFilterList}/> Filter charities
+                </legend>
                 <HStack {...group}>
                     {options.map((option) => {
                         return (
